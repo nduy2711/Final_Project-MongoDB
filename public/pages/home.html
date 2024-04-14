@@ -1,19 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Trang chủ</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <title>Orders Management</title>
 </head>
 <body>
-    <h1>Thông tin đơn hàng</h1>
-    <form>
-        <label for="orderID">OrderID:</label>
-        <input type="text" id="orderID" name="orderID"><br>
+    <header>
+        <a href=""><img src="../images/VanLang-logo.png" alt="Logo" class="logo"></a>
 
-        <label for="totalAmount">Total Amount:</label>
-        <input type="text" id="totalAmount" name="totalAmount"><br>
+        <ul class="navbar">
+            <li><a href="">Home</a></li>
+            <li><a href="">Order List</a></li>
+            <li><a href="">Create</a></li>
+            <li><a href="">Delete</a></li>
+            <li><a href="">Update</a></li>
+            <li><a href="">Find</a></li>
+        </ul>
 
-        <button type="button" id="addButton">Add</button>
-        <input type="submit" value="Submit">
-    </form>
+        <div class="h-right">
+            <a href="">Follow us</a>
+            <a href=""><i class="fa-brands fa-instagram"></i></a>
+            <a href=""><i class="fa-brands fa-github"></i></a>
+            <a href=""><i class="fa-brands fa-facebook"></i></a>
+            <div class="bx bx-menu" id="menu-icon"></div>
+        </div>
+    </header>
+
+    <section class="home">
+        <div class="home-text">
+            <h5>Let's</h5>
+            <h1>Management <br> your Orders</h1>
+            <p>Empower your management tasks with our intuitive platform tailored for order processing.</p>
+            <a href="#" class="btn">Orders List</a>
+        </div>
+    </section>
+
+    <section class="cooperation">
+        <h1>CO-OPERATION</h1>
+        <div class="cooperation-member">
+            <div class="row">
+                <div class="row-img">
+                    <img src="../images/grab-logo.png" alt="">
+                </div>
+                <h4>Grab</h4>
+            </div>
+            <div class="row">
+                <div class="row-img">
+                    <img src="../images/goviet-logo.png" alt="">
+                </div>
+                <h4>Go Viet</h4>
+            </div>
+            <div class="row">
+                <div class="row-img">
+                    <img src="../images/be-logo.png" alt="">
+                </div>
+                <h4>Be</h4>
+            </div>
+        </div>
+    </section>
+
+    <section class="service">
+        <div class="service-img">
+            <img src="../images/employee1.png" alt="">
+        </div>
+
+        <div class="service-text">
+            <h5>Friendly</h5>
+            <h2>Discover Our Welcoming Atmosphere</h2>
+            <p>At our service, friendliness is more than just a gesture –
+                it's at the core of everything we do. Experience a warm, 
+                inviting environment where your needs are not just met 
+                but exceeded with a genuine smile.
+            </p>
+            <a href="#" class="btn">Read more</a>    
+        </div>
+    </section>
+
+    <section class="service">
+        <div class="service-text">
+            <h5>Dedicated</h5>
+            <h2>Experience Our Diligence in Action</h2>
+            <p>At our company, dedication is the cornerstone of our work ethic. Witness our team's relentless commitment to excellence as we go above and beyond to fulfill your needs with precision and care.</p>
+            <a href="#" class="btn">Discover More</a>    
+        </div>
+        <div class="service-img">
+            <img src="../images/employee2.png" alt="">
+        </div>
+    </section>
+
+    <section class="footer">
+        <div class="footer-box">
+            <h3>Services</h3>
+            <a href="#">Email Marketing</a>
+            <a href="#">Campaigns</a>
+            <a href="#">Brandings</a>
+            <a href="#">Offline</a>
+        </div>
+        
+        <div class="footer-box">
+            <h3>About</h3>
+            <a href="#">Our story</a>
+            <a href="#">Benefits</a>
+            <a href="#">Team</a>
+            <a href="#">Careers</a>
+        </div>
+
+        <div class="footer-box">
+            <h3>Help</h3>
+            <a href="#">FAQs</a>
+            <a href="#">Contact us</a>
+        </div>
+
+        <div class="footer-box">
+            <h3>Social</h3>
+            <div class="social">
+                <a href=""><i class="fa-brands fa-instagram"></i></a>
+                <a href=""><i class="fa-brands fa-github"></i></a>
+                <a href=""><i class="fa-brands fa-facebook"></i></a>    
+            </div>
+            
+        </div>
+    </section>
+
+    <div class="copyright">
+        <p>copyright 2024 by VanLangUniverSity</p>
+    </div>
 </body>
+
+<script>
+    const header = document.querySelector("header");
+
+    window.addEventListener("scroll", function(){
+        header.classList.toggle("sticky", window.scrollY > 60)
+    })
+</script>
+
 </html>

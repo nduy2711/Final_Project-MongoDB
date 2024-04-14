@@ -3,7 +3,7 @@ const { MongoClient } = require("mongodb");
 // Replace the uri string with your connection string.
 const mongodbUrl = "mongodb://localhost:27017";
 
-let client = new MongoClient(url);
+let client = new MongoClient(mongodbUrl);
 const dbName = 'orders';
 const collectionName = 'order';
 
@@ -22,7 +22,7 @@ async function connectToMongoDB() {
 async function closeMongoDBConnection() {
     if(client) {
         await client.close()
-            then(() => {
+            .then(() => {
                 console.log('Disconnected from MongoDB');
                 process.exit(0);
             })
@@ -38,4 +38,10 @@ async function closeMongoDBConnection() {
 async function findOrders() {
     const documents = await dbCollection.find().toArray();
     return documents;
+}
+
+module.exports = {
+    connectToMongoDB,
+    closeMongoDBConnection,
+    findOrders
 }
