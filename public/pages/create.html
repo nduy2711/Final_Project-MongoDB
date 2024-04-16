@@ -24,15 +24,15 @@
         <a href="" class="manager-icon" ><i class="fa-solid fa-user-tie"></i></a>
     </header>
 
-    <section class="create" id="sec-1">
-        <div class="create-text">
+    <section class="home" id="sec-1">
+        <div class="home-text">
             <h3>Create</h3>
             <h1>Order</h1>
             <h5>This is homepage management by <span>Le Nhat Duy</span></h5>
             <p>Simplify order creation for seamless business management.</p>
-            <button class="btn-create">Create</button>
+            <button class="btn">Create</button>
         </div>
-        <div class="create-img">
+        <div class="home-img">
             <img src="../images/box.png" alt="">
         </div>
 
@@ -110,7 +110,7 @@
     })
 
     // Lấy tham chiếu tới nút "Create"
-    const createButton = document.querySelector(".btn-create");
+    const createButton = document.querySelector(".btn");
 
     // Lấy tham chiếu tới phần "Create Order"
     const createOrderSection = document.querySelector(".create-order");
@@ -127,8 +127,8 @@
 	reset: true
     })
 
-    sr.reveal('.create-text',{delay:350, origin:'left'})
-    sr.reveal('.create-img',{delay:350, origin:'right'})
+    sr.reveal('.home-text',{delay:350, origin:'left'})
+    sr.reveal('.home-img',{delay:350, origin:'right'})
 
     sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact',{delay:200, origin:'bottom'})
 

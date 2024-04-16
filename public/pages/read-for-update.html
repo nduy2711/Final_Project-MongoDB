@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../stylesheets/anopage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <title>Read-for-update</title>
+    <style>
+        .home {
+            display: flex;
+        }
+
+        form {
+            width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"] {
+            width: calc(100% - 12px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        button[type="submit"],
+        button[type="reset"] {
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover,
+        button[type="reset"]:hover {
+            background-color: #555;
+        }
+
+        button[type="submit"]:focus,
+        button[type="reset"]:focus {
+            outline: none;
+        }
+
+        button[type="submit"]:active,
+        button[type="reset"]:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="#" class="logo"><img src="../images/VanLang-logo.png" alt=""></a>
+        <ul class="navlist">
+            <li><a href="./home.html">Home</a></li>
+            <li><a href="./order">Order List</a></li>
+            <li><a href="./create.html">Create</a></li>
+            <li><a href="./delete.html">Delete</a></li>
+            <li><a href="./read-for-update.html">Update</a></li>
+            <li><a href="./search.html">Find</a></li>
+        </ul>
+        <a href="" class="manager-icon" ><i class="fa-solid fa-user-tie"></i></a>
+    </header>
+
+    <section class="home">
+        <form action="/read/for/update" method="GET" class="update">
+            <label for="orderID">Order ID:</label>
+            <input type="text" id="orderID" name="orderID"><br><br>
+    
+            <label for="orderStatus">Order Status:</label>
+            <input type="text" id="orderStatus" name="orderStatus"><br><br>
+    
+            <!-- <label for="image">Image:</label>
+            <input type="file" id="image" name="image"><br><br> -->
+    
+            <button type="submit">Submit</button>
+            <button type="reset">Reset</button>
+        </form>
+    </section>
+
+    <section class="footer">
+        <div class="footer-box">
+            <h3>Services</h3>
+            <a href="#">Email Marketing</a>
+            <a href="#">Campaigns</a>
+            <a href="#">Brandings</a>
+            <a href="#">Offline</a>
+        </div>
+        
+        <div class="footer-box">
+            <h3>About</h3>
+            <a href="#">Our story</a>
+            <a href="#">Benefits</a>
+            <a href="#">Team</a>
+            <a href="#">Careers</a>
+        </div>
+
+        <div class="footer-box">
+            <h3>Help</h3>
+            <a href="#">FAQs</a>
+            <a href="#">Contact us</a>
+        </div>
+
+        <div class="footer-box">
+            <h3>Social</h3>
+            <div class="social">
+                <a href=""><i class="fa-brands fa-instagram"></i></a>
+                <a href=""><i class="fa-brands fa-github"></i></a>
+                <a href=""><i class="fa-brands fa-facebook"></i></a>    
+            </div>
+            
+        </div>
+    </section>
+</body>
+
+<script src="https://unpkg.com/scrollreveal"></script>
+
+<script>
+    const header = document.querySelector("header");
+
+    window.addEventListener("scroll", function(){
+        header.classList.toggle("sticky", window.scrollY > 60)
+    })
+
+    const sr = ScrollReveal ({
+	distance: '45px',
+	duration: 2700,
+	reset: true
+    })
+
+    sr.reveal('.update',{delay:350, origin:'bottom'})
+    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact',{delay:200, origin:'bottom'})
+</script>
+</html>

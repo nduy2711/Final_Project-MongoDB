@@ -3,9 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../stylesheets/anopage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <title>Document</title>
 </head>
 <body>
+    <header>
+        <a href="#" class="logo"><img src="../images/VanLang-logo.png" alt=""></a>
+        <ul class="navlist">
+            <li><a href="home.html">Home</a></li>
+            <li><a href="./order">Order List</a></li>
+            <li><a href="./create.html">Create</a></li>
+            <li><a href="./delete.html">Delete</a></li>
+            <li><a href="./read-for-update.html">Update</a></li>
+            <li><a href="./search.html">Find</a></li>
+        </ul>
+        <a href="" class="manager-icon" ><i class="fa-solid fa-user-tie"></i></a>
+    </header>
+
+    <section class="home" id="sec-1">
+        <div class="home-text">
+            <h3>Delete</h3>
+            <h1>Order</h1>
+            <h5>This is homepage management by <span>Le Nhat Duy</span></h5>
+            <p>Efficiently remove orders to maintain a streamlined workflow.</p>
+            <button class="btn">Delete</button>
+        </div>
+        <div class="home-img">
+            <img src="../images/box.png" alt="">
+        </div>
+    </section>
+
+    <div class="delete-order hide">
+        <div id="orderForm">
+            <div class="close-detele">
+                <i class="fa-solid fa-xmark"></i>
+            </div>
+            <h2>Delete Order</h2>
+            <form>
+                <label for="orderID">Order ID:</label><br>
+                <select id="orderID"></select><br>
     
+                <button type="button" class="btn-delete" onclick="confirmDelete()">Xóa</button>
+            </form>
+            
+        </div>
+    </div>
+
+     <section class="footer">
+        <div class="footer-box">
+            <h3>Services</h3>
+            <a href="#">Email Marketing</a>
+            <a href="#">Campaigns</a>
+            <a href="#">Brandings</a>
+            <a href="#">Offline</a>
+        </div>
+        
+        <div class="footer-box">
+            <h3>About</h3>
+            <a href="#">Our story</a>
+            <a href="#">Benefits</a>
+            <a href="#">Team</a>
+            <a href="#">Careers</a>
+        </div>
+
+        <div class="footer-box">
+            <h3>Help</h3>
+            <a href="#">FAQs</a>
+            <a href="#">Contact us</a>
+        </div>
+
+        <div class="footer-box">
+            <h3>Social</h3>
+            <div class="social">
+                <a href=""><i class="fa-brands fa-instagram"></i></a>
+                <a href=""><i class="fa-brands fa-github"></i></a>
+                <a href=""><i class="fa-brands fa-facebook"></i></a>    
+            </div>
+            
+        </div>
+    </section>
 </body>
+
+<script src="https://unpkg.com/scrollreveal"></script>
+
+<script>
+    const header = document.querySelector("header");
+
+    window.addEventListener("scroll", function(){
+        header.classList.toggle("sticky", window.scrollY > 60)
+    })
+
+    const sr = ScrollReveal ({
+	distance: '45px',
+	duration: 2700,
+	reset: true
+    })
+
+    sr.reveal('.home-text',{delay:350, origin:'left'})
+    sr.reveal('.home-img',{delay:350, origin:'right'})
+
+    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact',{delay:200, origin:'bottom'})
+
+    var btnDelete = document.querySelector('.btn');
+    var modal = document.querySelector('.delete-order');
+    var iconClose = document.querySelector('.close-detele i');
+
+    function toggleModal(e) {
+        modal.classList.toggle('hide');
+        console.log('done');
+    }
+
+    btnDelete.addEventListener('click', toggleModal);
+    iconClose.addEventListener('click', toggleModal);
+    modal.addEventListener('click', function(e){
+        if(e.target == this) {
+            toggleModal();
+        }
+    });
+
+    //mongodb
+            // Function to populate order IDs
+            function populateOrderIDs() {
+            const orderIDSelect = document.getElementById('orderID');
+            // Clear existing options
+            orderIDSelect.innerHTML = '';
+            // Populate with order IDs
+            const orders = [
+                { orderID: "OD20240001", orderDate: "2024-01-24", totalAmount: 150.50, orderStatus: "Processing", paymentMethod: "Credit Card", image: "a.jpg" },
+                { orderID: "OD20240002", orderDate: "2024-01-25", totalAmount: 200.75, orderStatus: "Shipped", paymentMethod: "PayPal", image: "b.jpg" },
+                { orderID: "OD20240003", orderDate: "2024-01-26", totalAmount: 75.00, orderStatus: "Delivered", paymentMethod: "Cash on Delivery", image: "c.jpg" },
+                { orderID: "OD20240004", orderDate: "2024-01-27", totalAmount: 120.25, orderStatus: "Cancelled", paymentMethod: "Debit Card", image: "d.jpg" },
+                { orderID: "OD20240005", orderDate: "2024-01-28", totalAmount: 90.80, orderStatus: "Pending", paymentMethod: "Bank Transfer", image: "e.jpg" },
+                { orderID: "OD20240006", orderDate: "2024-01-29", totalAmount: 180.00, orderStatus: "Shipped", paymentMethod: "Google Pay", image: "f.jpg" },
+                { orderID: "OD20240007", orderDate: "2024-01-30", totalAmount: 60.50, orderStatus: "Delivered", paymentMethod: "Credit Card", image: "g.jpg" },
+                { orderID: "OD20240008", orderDate: "2024-01-31", totalAmount: 100.00, orderStatus: "Processing", paymentMethod: "PayPal", image: "1.jpg" },
+                { orderID: "OD20240009", orderDate: "2024-02-01", totalAmount: 135.75, orderStatus: "Pending", paymentMethod: "Cash on Delivery", image: "2.jpg" },
+                { orderID: "OD20240010", orderDate: "2024-02-02", totalAmount: 95.20, orderStatus: "Cancelled", paymentMethod: "Debit Card", image: "3.jpg" },
+                { orderID: "OD20240011", orderDate: "2024-02-03", totalAmount: 120.00, orderStatus: "Shipped", paymentMethod: "Bank Transfer", image: "4.jpg" },
+                { orderID: "OD20240012", orderDate: "2024-02-04", totalAmount: 85.50, orderStatus: "Delivered", paymentMethod: "Google Pay", image: "5.jpg" },
+                { orderID: "OD20240013", orderDate: "2024-02-05", totalAmount: 170.25, orderStatus: "Processing", paymentMethod: "Credit Card", image: "6.jpg" },
+                { orderID: "OD20240014", orderDate: "2024-02-06", totalAmount: 110.75, orderStatus: "Pending", paymentMethod: "Cash on Delivery", image: "8.jpg" },
+                { orderID: "OD20240015", orderDate: "2024-02-07", totalAmount: 95.00, orderStatus: "Cancelled", paymentMethod: "PayPal", image: "9.jpg" },
+                { orderID: "OD20240016", orderDate: "2024-02-08", totalAmount: 130.20, orderStatus: "Shipped", paymentMethod: "Debit Card", image: "10.jpg" },
+                { orderID: "OD20240017", orderDate: "2024-02-09", totalAmount: 75.50, orderStatus: "Delivered", paymentMethod: "Bank Transfer", image: "11.png" },
+                { orderID: "OD20240018", orderDate: "2024-02-10", totalAmount: 200.00, orderStatus: "Processing", paymentMethod: "Google Pay", image: "12.jpg" },
+                { orderID: "OD20240019", orderDate: "2024-02-11", totalAmount: 150.75, orderStatus: "Pending", paymentMethod: "Credit Card", image: "13.jpg" },
+                { orderID: "OD20240020", orderDate: "2024-02-12", totalAmount: 180.50, orderStatus: "Cancelled", paymentMethod: "Cash on Delivery", image: "7.jpg" }
+            ];
+            orders.forEach(order => {
+                const option = document.createElement('option');
+                option.value = order.orderID;
+                option.textContent = order.orderID;
+                orderIDSelect.appendChild(option);
+            });
+        }
+
+        function confirmDelete() {
+            const orderID = document.getElementById('orderID').value;
+            if (!orderID) {
+                alert('Vui lòng chọn Order ID để xóa.');
+                return;
+            }
+
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này không?')) {
+                deleteOrder(orderID);
+            }
+        }
+
+
+        // Function to delete order
+        function deleteOrder() {
+            const orderID = document.getElementById('orderID').value;
+            if (!orderID) {
+                alert('Vui lòng chọn Order ID để xóa.');
+                return;
+            }
+
+            fetch(`/api/delete/${orderID}`, {
+                method: "DELETE"
+            })
+                .then(response => response.text())
+                .then(message => {
+                    alert(message);
+                    // Reload the page after deletion
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi xóa đơn hàng.');
+                });
+        }
+
+        // Populate order IDs when the page loads
+        window.onload = populateOrderIDs;
+</script>
+
 </html>

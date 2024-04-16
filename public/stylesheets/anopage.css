@@ -92,7 +92,7 @@ section {
     padding: 200px 18%
 }
 
-.create {
+.home {
     min-height: 100vh;
     height: 100%;
     width: 100%;
@@ -107,14 +107,14 @@ section {
 
 }
 
-.create-text h1 {
+.home-text h1 {
     margin: 10px 0px 25px;
     font-size: var(--big-font);
     line-height: 1;
     font-weight: 500;
 }
 
-.create-text h5 {
+.home-text h5 {
     margin-bottom: 23px;
     font-size: 19px;
     font-weight: 500;
@@ -124,20 +124,20 @@ span {
     color: var(--main-color);
 }
 
-.create-text h3 {
+.home-text h3 {
     color: var(--main-color);
     font-size: 20px;
     font-weight: 500;
 }
 
-.create-text p {
+.home-text p {
     font-size: var(--p-font);
     color: var(--second-color);
     line-height: 28px;
     margin-bottom: 20px;
 }
 
-.btn-create {
+.btn {
     display: inline-block;
     padding: 13px 40px;
     background: var(--main-color);
@@ -150,18 +150,18 @@ span {
     cursor: pointer;
 }
 
-.btn-create:hover {
+.btn:hover {
     transform: translateX(10px);
     border: 2px solid var(--text-color);
     background: transparent;
     color: (var(--text-color));
 }
 
-.create-img {
+.home-img {
     margin-left: 300px;
 }
 
-.create-img img {
+.home-img img {
     width: 100%;
     width: 500px;
     height: auto;
@@ -268,4 +268,67 @@ header.sticky {
     padding: 8px 17%;
     background-color: #F6F5F2;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.delete-order {
+    position: absolute;
+    height: 1200px;
+    width: 1519px;
+    top: 0%;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.hide {
+    display: none;
+}
+
+.close-detele {
+    position: relative;
+    top: 0%;
+    left: 92%;
+    font-size: 25px;
+}
+
+#orderForm {
+    position: relative;
+    top: 10%;
+    width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    animation: modalShow 0.2s linear;
+}
+
+.btn-delete {
+    padding: 10px 20px;
+    background-color: #FF204E;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.5s ease;
+}
+
+.btn-delete:hover {
+    background-color: #E72929;
+}
+
+select {
+    margin-bottom: 20px;
+    padding: 5px 20px;
+    border-radius: 5px;
+}
+
+@keyframes modalShow {
+    from {
+        top: -200px;
+        opacity: 0;
+    }
+    
+    to {
+        top: 10%;
+        opacity: 1;
+    }
 }
