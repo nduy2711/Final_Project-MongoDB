@@ -35,13 +35,40 @@ async function closeMongoDBConnection() {
     }
 }
 
-async function findOrders() {
+async function findDocuments(query) {
+    const documents = await dbCollection.find(query).toArray();
+    return documents;
+}
+
+async function findOrderList() {
     const documents = await dbCollection.find().toArray();
     return documents;
+}
+
+async function addManyOrders(orders) {
+    const client = new MongoClient(mongodbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+
+    try {
+        await client.connect();
+        console.log('Connected to MongoDB successfully!!');
+        const ordersCollection = client.db(dbName).collection(collectionName);
+
+        // Thêm dữ liệu vào collection
+        const result = await ordersCollection.insertMany(orders);
+        console.log(`${result.insertedCount} orders inserted successfully.`);
+
+    } catch (err) {
+        console.error('Error: ', err);
+    } finally {
+        // Đóng kết nối
+        await client.close();
+    }
 }
 
 module.exports = {
     connectToMongoDB,
     closeMongoDBConnection,
-    findOrders
+    findDocuments,
+    findOrderList,
+    addManyOrders
 }

@@ -41,7 +41,7 @@
 
     <section class="create-order" id="sec-2">
         <div class="container">
-            <form id="orderForm" action="/createManyOrders" method="POST">
+            <form id="orderForm" action="/createManyOrders" method="POST" enctype="multipart/form-data">
                 <label for="orderID">Order ID:</label><br>
                 <input type="text" id="orderID" name="orderID"><br>
                         
@@ -141,20 +141,26 @@
         var totalAmount = document.getElementById("totalAmount").value;
         var orderStatus = document.getElementById("orderStatus").value;
         var paymentMethod = document.getElementById("paymentMethod").value;
-        var image = document.getElementById("image").value;
-
-        var order = {
-            orderID: orderID,
-            orderDate: orderDate,
-            totalAmount: totalAmount,
-            orderStatus: orderStatus,
-            paymentMethod: paymentMethod,
-            image: image
+        var image = document.getElementById("image").files[0]; // Lấy file đầu tiên trong danh sách file đã chọn
+        
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            var imageData = event.target.result; // Dữ liệu của file hình ảnh đã chọn
+            var order = {
+                orderID: orderID,
+                orderDate: orderDate,
+                totalAmount: totalAmount,
+                orderStatus: orderStatus,
+                paymentMethod: paymentMethod,
+                image: imageData // Lưu dữ liệu hình ảnh vào đối tượng order
+            };
+        
+            orders.push(order);
+            outputMessage(`The order [${orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
         };
-
-        orders.push(order);
-        outputMessage(`The order [${orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
-    }
+    
+        reader.readAsDataURL(image); // Đọc dữ liệu của file hình ảnh
+}
 
     function submitOrders() {
         fetch('/createManyOrders', {
