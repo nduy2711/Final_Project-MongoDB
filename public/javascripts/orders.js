@@ -104,7 +104,9 @@ function output(orders) {
     return tableHtml;
 }
 
+function test() {
 
+}
 
 module.exports = {
     output
