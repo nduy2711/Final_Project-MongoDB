@@ -71,7 +71,7 @@
         <a href="#" class="logo"><img src="../images/VanLang-logo.png" alt=""></a>
         <ul class="navlist">
             <li><a href="./home.html">Home</a></li>
-            <li><a href="./order">Order List</a></li>
+            <li><a href="/order">Order List</a></li>
             <li><a href="./create.html">Create</a></li>
             <li><a href="./delete.html">Delete</a></li>
             <li><a href="./read-for-update.html">Update</a></li>
@@ -81,15 +81,11 @@
     </header>
 
     <section class="home">
-        <form action="/read/for/update" method="GET" class="update">
-            <label for="orderID">Order ID:</label>
-            <input type="text" id="orderID" name="orderID"><br><br>
-    
-            <label for="orderStatus">Order Status:</label>
-            <input type="text" id="orderStatus" name="orderStatus"><br><br>
-    
-            <!-- <label for="image">Image:</label>
-            <input type="file" id="image" name="image"><br><br> -->
+        <form id="updateForm" action="/read/for/update" method="GET">
+            <label for="orderID">Select an Order:</label>
+            <select name="orderID" id="orderID">
+                <!-- Populate options dynamically using JavaScript -->
+            </select><br><br>
     
             <button type="submit">Submit</button>
             <button type="reset">Reset</button>
@@ -148,5 +144,31 @@
 
     sr.reveal('.update',{delay:350, origin:'bottom'})
     sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact',{delay:200, origin:'bottom'})
+
+    //mongodb
+    async function populateOrderIDs() {
+        const orderIDSelect = document.getElementById('orderID');
+        
+        try {
+            const response = await fetch('/api/orderIDs');
+            const orderIDs = await response.json();
+
+            orderIDSelect.innerHTML = ''; // Xóa tất cả các option hiện có
+
+            orderIDs.forEach(orderID => {
+                const option = document.createElement('option');
+                option.value = orderID;
+                option.textContent = orderID;
+                orderIDSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching order IDs:', error);
+            alert('Đã xảy ra lỗi khi tải danh sách order IDs.');
+        }
+    }
+
+    window.onload = populateOrderIDs;
+    
+    
 </script>
 </html>
