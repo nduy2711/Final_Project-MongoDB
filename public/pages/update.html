@@ -77,7 +77,7 @@
 <body>
     <section class="update">
         <a href="./read-for-update.html"><i class="fa-solid fa-arrow-left"></i></a>
-        <form action="/update" method="PUT">
+        <form id="updateForm" action="/update" method="PUT">
             <label for="orderID">Order ID:</label>
             <input type="text" id="orderID" name="orderID" readonly><br><br>
         
@@ -91,4 +91,32 @@
         </form>
     </section>
 </body>
+<script>
+    const queryParams = new URLSearchParams(window.location.search);
+    const oldOrder = Object.fromEntries(queryParams.entries());
+    let newOrder = oldOrder;
+
+    document.getElementById('orderID').value = oldOrder.orderID;
+    document.getElementById('totalAmount').value = oldOrder.totalAmount;
+    document.getElementById('paymentMethod').value = oldOrder.paymentMethod;
+
+    function updateOrder() {
+        newOrder.totalAmount = document.getElementById('totalAmount').value;
+        newOrder.paymentMethod = document.getElementById('paymentMethod').value;
+
+        fetch('/update', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newOrder)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Response from server:', data);
+            alert(data.message);
+        })
+        .catch(err => {
+            alert('Cannot update: ' + err);
+        });
+    }
+</script>
 </html>

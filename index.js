@@ -2,15 +2,16 @@ const express = require('express')
 const app = express()
 const port = 3000
 const path = require('path')
-const multer = require('multer')
 
 const bodyParser = require('body-parser');
+
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
+const querystring = require('querystring');
+
 const orderModule = require('./public/javascripts/orders')
 const mongodbModule = require("./public/javascripts/mongodb")
-const { error } = require('console')
 
 mongodbModule.connectToMongoDB()
     .then(() => {
@@ -23,7 +24,7 @@ mongodbModule.connectToMongoDB()
 
 const server = app.listen(3000, () => {
     console.log("Server is running on port 3000");
-})
+});
 
 process.on('SIGINT', () => {
     mongodbModule.closeMongoDBConnection()
@@ -39,24 +40,6 @@ app.use(express.static('pages'));
 app.use(express.urlencoded({
     extended: true
 }))
-
-// var storage = multer.diskStorage({
-//     destination:function(req, file, cb) {
-//         if(file.mimetype === "image/jpg" || 
-//         file.mimetype === "image/jpg"||
-//         file.mimetype === "image/jpg") {
-//             cb(null, 'public/images')
-//         } else {
-//             cb(new Error('not image'), false)
-//         }
-//     },
-//     filename:function(req, file, cb) {
-//         cb(null, file.originalname);
-//         cb(null, Date.now+'.jpg')
-//     }
-// })
-
-// var upload = multer({storage:storage});
 
 
 app.get('/', (req, res) => {
@@ -76,15 +59,184 @@ app.get('/order', async (req,res) =>
 })
 
 app.post('/createManyOrders' ,async (req, res, next) => {
-    // const file = req.file;
-    // if(file) {
-    //     const error = new Error('Please upload a file')
-    //     return next(error);
-    // }
     const order = req.body;
-    console.log(order);
     mongodbModule.addManyOrders(order);
     const message  = `${order.length} orders created successfully!`
     res.json({message: message})
-    //res.send(`Thêm thành công ${req.body.name}! Bạn có thể xem lại danh sách <a href=/order>tại đây</a>`)
+});
+
+app.delete('/api/delete/:orderID', async (req, res) => {
+    const orderID = req.params.orderID;
+    try {
+        const deletedCount = await mongodbModule.deleteOrder(orderID);
+        if (deletedCount === 1) {
+            res.send(`Đã xóa đơn hàng có ID = ${orderID} thành công.`);
+        } else {
+            res.send(`Không tìm thấy đơn hàng có ID = ${orderID}.`);
+        }
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        res.status(500).send('Đã xảy ra lỗi khi xóa đơn hàng.');
+    }
+});
+
+app.delete('/api/deleteAll', async (req, res) => {
+    try {
+        const deletedCount = await mongodbModule.deleteAllOrders();
+        res.send(`${deletedCount} đơn hàng đã được xóa thành công.`);
+    } catch (error) {
+        console.error('Error deleting all orders:', error);
+        res.status(500).send('Đã xảy ra lỗi khi xóa tất cả đơn hàng.');
+    }
+});
+
+app.get('/api/orderIDs', async (req, res) => {
+    try {
+        const orderIDs = await mongodbModule.getOrderIDs();
+        res.json(orderIDs);
+    } catch (error) {
+        console.error('Error fetching order IDs:', error);
+        res.status(500).send('Đã xảy ra lỗi khi lấy danh sách order IDs.');
+    }
+});
+
+app.get('/read',async (req, res) => {
+    const paymentMethod = req.query.paymentMethod;
+    const minPrice = req.query.minPrice; 
+    const maxPrice = req.query.maxPrice;
+    const query = {};
+
+    if (paymentMethod) {
+        query.paymentMethod = {$regex: paymentMethod, $options: 'i'}
+    }
+    if (minPrice) {
+        query.totalAmount = {$gte: parseFloat(minPrice)};
+    }
+    
+    if (minPrice && maxPrice) {
+        query.totalAmount = {$gte: parseFloat(minPrice), $lte: parseFloat(maxPrice)};
+    } else if (minPrice) {
+        query.totalAmount = {$lte: parseFloat(minPrice)};
+    } else if (maxPrice) {
+        query.totalAmount = {$gte: parseFloat(maxPrice)};
+    }
+
+    try {
+        const searchResult = await mongodbModule.findDocuments(query);
+        const tableRowsHTML = searchResult.map(order => {
+            return `
+                <tr>
+                    <td>${order.orderID}</td>
+                    <td>${order.orderDate}</td>
+                    <td>$${order.totalAmount}</td>
+                    <td>${order.orderStatus}</td>
+                    <td>${order.paymentMethod}</td>
+                    <td><img src="/public/images/${order.image}" alt="" style="max-width: 100px;"></td>
+                </tr>
+            `;
+        }).join('');
+        res.send(`
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #f4f4f4;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        background-color: #fff;
+                        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                    }
+                    th, td {
+                        padding: 12px 15px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #007bff;
+                        color: #fff;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f2f2f2;
+                    }
+                    img {
+                        max-width: 100px;
+                        height: auto;
+                        display: block;
+                        margin: 0 auto;
+                    }
+                    .back-icon {
+                        text-align: left;
+                        margin-bottom: 20px;
+                    }
+                    .back-icon a {
+                        text-decoration: none;
+                        color: #000000;
+                        font-size: 24px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="back-icon">
+                    <a href="./search.html"><i class="fas fa-arrow-left"></i> Back to Search</a>
+                </div>
+                <h1 style="text-align: center;">Order List</h1>                
+                <table border="1">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Order Date</th>
+                        <th>Total Amount</th>
+                        <th>Order Status</th>
+                        <th>Payment Method</th>
+                        <th>Image</th>
+                    </tr>
+                    <tbody>
+                        ${tableRowsHTML}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Failed to search orders');
+    }    
+})
+
+app.get('/read/for/update', async (req, res) => {
+    const orderID = req.query.orderID;
+    
+    try {
+        const editOrder = await mongodbModule.getOrderById(orderID);
+
+        const queryParams = querystring.stringify(editOrder);
+        res.redirect(`/pages/update.html?${queryParams}`);
+    } catch (err) {
+        console.error('Error: ', err);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.put('/update', async (req, res) => {
+    try {
+        const newOrder = req.body;
+        const orderID = newOrder.orderID;
+
+        const ordersCollection = mongodbModule.dbCollection;
+        await ordersCollection.updateOne({ orderID: orderID }, {
+            $set: {
+                totalAmount: newOrder.totalAmount,
+                paymentMethod: newOrder.paymentMethod
+            }
+        });
+
+        const content = `Order ID = ${newOrder.orderID} updated successfully !!!`;
+        res.json({ message: content }); // Response to fetch()
+    } catch (err) {
+        console.error('Error: ', err);
+        res.status(500).send('Internal server error');
+    }
 });
