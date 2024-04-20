@@ -45,6 +45,24 @@ async function findOrderList() {
     return documents;
 }
 
+async function getnextIDNumber(client, dbName, collectionName) {
+    const db = client.db(dbName);
+    const collection = db.collection(collectionName);
+
+    const lastOrder = await collection.find().sort({ orderID: -1 }).limit(1).toArray();
+
+    if (lastOrder.length === 0) {
+        console.log("Khong co Id de lay");
+        return 1;
+    } else {
+        const lastID = lastOrder[0].orderID;
+        const nextIDNumber = parseInt(lastID.replace("OD202400", "")) + 1;
+        console.log("co iD");
+        return nextIDNumber;
+    }
+}
+
+
 async function addManyOrders(orders) {
     const client = new MongoClient(mongodbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -65,10 +83,42 @@ async function addManyOrders(orders) {
     }
 }
 
+async function addOrder() {
+    await connectToMongoDB();
+    var orderID = await getID();
+    var orderDate = document.getElementById("orderDate").value;
+    var totalAmount = document.getElementById("totalAmount").value;
+    var orderStatus = document.getElementById("orderStatus").value;
+    var paymentMethod = document.getElementById("paymentMethod").value;
+    var images = document.getElementById("image").files; // Lấy danh sách các tệp đã chọn
+    for (var i = 0; i < images.length; i++) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            var imageData = event.target.result; // Dữ liệu của tệp hình ảnh đã chọn
+            var order = {
+                orderID: orderID,
+                orderDate: orderDate,
+                totalAmount: totalAmount,
+                orderStatus: orderStatus,
+                paymentMethod: paymentMethod,
+                image: imageData // Lưu dữ liệu hình ảnh vào đối tượng order
+            };
+        
+            orders.push(order);
+            outputMessage(`The order [${order.orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
+            //currentOrderID++; // Tăng giá trị của currentOrderID
+        };
+    
+        reader.readAsDataURL(images[i]); // Đọc dữ liệu của từng tệp hình ảnh
+    }
+}
+
 module.exports = {
     connectToMongoDB,
     closeMongoDBConnection,
     findDocuments,
     findOrderList,
-    addManyOrders
+    addManyOrders,
+    getnextIDNumber,
+    addOrder
 }
