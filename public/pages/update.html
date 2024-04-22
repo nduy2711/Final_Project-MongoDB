@@ -81,12 +81,21 @@
             <label for="orderID">Order ID:</label>
             <input type="text" id="orderID" name="orderID" readonly><br><br>
         
-            <label for="totalAmount">Total Amount:</label>
-            <input type="number" id="totalAmount" name="totalAmount"><br><br>
+            <label for="orderDate">order Date:</label>
+            <input type="number" id="orderDate" name="orderDate"><br><br>
         
+            <label for="totalAmount">Total Amount:</label>
+            <input type="text" id="totalAmount" name="totalAmount"><br><br>
+
             <label for="paymentMethod">Payment Method:</label>
             <input type="text" id="paymentMethod" name="paymentMethod"><br><br>
+
+            <label for="orderStatus">Order Status:</label>
+            <input type="text" id="orderStatus" name="orderStatus"><br><br>
             
+            <label for="image">image:</label>
+            <input type="text" id="image" name="image"><br><br>
+
             <button type="button" onclick="updateOrder()">Update</button>
         </form>
     </section>
@@ -97,12 +106,18 @@
     let newOrder = oldOrder;
 
     document.getElementById('orderID').value = oldOrder.orderID;
+    document.getElementById('orderDate').value = oldOrder.orderDate;
     document.getElementById('totalAmount').value = oldOrder.totalAmount;
+    document.getElementById('orderStatus').value = oldOrder.orderStatus;
     document.getElementById('paymentMethod').value = oldOrder.paymentMethod;
+    document.getElementById('image').value = oldOrder.image;
 
     function updateOrder() {
+        newOrder.orderDate = document.getElementById('orderDate').value;
         newOrder.totalAmount = document.getElementById('totalAmount').value;
+        newOrder.orderStatus = document.getElementById('orderStatus').value;
         newOrder.paymentMethod = document.getElementById('paymentMethod').value;
+        newOrder.image = document.getElementById('image').value;
 
         fetch('/update', {
             method: 'PUT',

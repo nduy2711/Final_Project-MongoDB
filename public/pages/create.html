@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../stylesheets/anopage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
     <title>Create Order</title>
 </head>
+
 <body>
     <header>
         <a href="#" class="logo"><img src="../images/VanLang-logo.png" alt=""></a>
@@ -21,7 +24,7 @@
             <li><a href="./read-for-update.html">Update</a></li>
             <li><a href="./search.html">Find</a></li>
         </ul>
-        <a href="" class="manager-icon" ><i class="fa-solid fa-user-tie"></i></a>
+        <a href="" class="manager-icon"><i class="fa-solid fa-user-tie"></i></a>
     </header>
 
     <section class="home" id="sec-1">
@@ -43,20 +46,20 @@
         <div class="container">
             <form id="orderForm" action="/createManyOrders" method="POST" enctype="multipart/form-data">
                 <label for="orderID">Order ID:</label><br>
-                <input type="text" id="orderID" name="orderID"><br>
-                        
+                <input type="text" id="orderID" name="orderID" readonly><br>
+
                 <label for="orderDate">Order Date:</label><br>
                 <input type="date" id="orderDate" name="orderDate"><br>
-                        
+
                 <label for="totalAmount">Total Amount:</label><br>
                 <input type="number" id="totalAmount" name="totalAmount"><br>
-                        
+
                 <label for="orderStatus">Order Status:</label><br>
                 <input type="text" id="orderStatus" name="orderStatus"><br>
-                        
+
                 <label for="paymentMethod">Payment Method:</label><br>
                 <input type="text" id="paymentMethod" name="paymentMethod"><br>
-                        
+
                 <label for="image">Image:</label><br>
                 <input type="file" id="image" name="image"><br><br>
                 <input type="button" value="Add" onclick="addOrder()">
@@ -73,7 +76,7 @@
             <a href="#">Brandings</a>
             <a href="#">Offline</a>
         </div>
-        
+
         <div class="footer-box">
             <h3>About</h3>
             <a href="#">Our story</a>
@@ -93,9 +96,9 @@
             <div class="social">
                 <a href=""><i class="fa-brands fa-instagram"></i></a>
                 <a href=""><i class="fa-brands fa-github"></i></a>
-                <a href=""><i class="fa-brands fa-facebook"></i></a>    
+                <a href=""><i class="fa-brands fa-facebook"></i></a>
             </div>
-            
+
         </div>
     </section>
 </body>
@@ -105,7 +108,7 @@
 <script>
     const header = document.querySelector("header");
 
-    window.addEventListener("scroll", function(){
+    window.addEventListener("scroll", function () {
         header.classList.toggle("sticky", window.scrollY > 60)
     })
 
@@ -116,67 +119,72 @@
     const createOrderSection = document.querySelector(".create-order");
 
     // Xử lý sự kiện click trên nút "Create"
-    createButton.addEventListener("click", function(event) {
+    createButton.addEventListener("click", function (event) {
         event.preventDefault();
         createOrderSection.scrollIntoView({ behavior: 'smooth' });
     });
 
-    const sr = ScrollReveal ({
-	distance: '45px',
-	duration: 2700,
-	reset: true
+    const sr = ScrollReveal({
+        distance: '45px',
+        duration: 2700,
+        reset: true
     })
 
-    sr.reveal('.home-text',{delay:350, origin:'left'})
-    sr.reveal('.home-img',{delay:350, origin:'right'})
+    sr.reveal('.home-text', { delay: 350, origin: 'left' })
+    sr.reveal('.home-img', { delay: 350, origin: 'right' })
 
-    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact',{delay:200, origin:'bottom'})
+    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact', { delay: 200, origin: 'bottom' })
 
     //mongodb
     var orders = [];
 
     function addOrder() {
-        var orderID = document.getElementById("orderID").value;
         var orderDate = document.getElementById("orderDate").value;
         var totalAmount = document.getElementById("totalAmount").value;
         var orderStatus = document.getElementById("orderStatus").value;
         var paymentMethod = document.getElementById("paymentMethod").value;
-        var image = document.getElementById("image").files[0]; // Lấy file đầu tiên trong danh sách file đã chọn
-        
-        var reader = new FileReader();
-        reader.onload = function(event) {
-            var imageData = event.target.result; // Dữ liệu của file hình ảnh đã chọn
+        var image = document.getElementById("image").files[0];
+
+        // const formData = new FormData();
+        // formData.append('orderDate', orderDate);
+        // formData.append('totalAmount', totalAmount);
+        // formData.append('orderStatus', orderStatus);
+        // formData.append('paymentMethod', paymentMethod);
+        // formData.append('image', image);
+
+        reader.onload = function (event) {
+            var imageData = event.target.result;
             var order = {
                 orderID: orderID,
                 orderDate: orderDate,
                 totalAmount: totalAmount,
                 orderStatus: orderStatus,
                 paymentMethod: paymentMethod,
-                image: imageData // Lưu dữ liệu hình ảnh vào đối tượng order
+                image: imageData
             };
-        
+
             orders.push(order);
             outputMessage(`The order [${orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
         };
-    
-        reader.readAsDataURL(image); // Đọc dữ liệu của file hình ảnh
-}
+
+        reader.readAsDataURL(image);
+    }
 
     function submitOrders() {
         fetch('/createManyOrders', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orders)
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Response from server: ', data);
-            alert(data.message);
-            resetForm();
-        })
-        .catch(err => {
-            console.error('Error: ',err);
-        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from server: ', data);
+                alert(data.message);
+                resetForm();
+            })
+            .catch(err => {
+                console.error('Error: ', err);
+            })
     }
 
     function resetForm() {
@@ -195,6 +203,7 @@
         messageElement.textContent = message;
         messageElement.style.color = color;
     }
+
 </script>
 
 </html>

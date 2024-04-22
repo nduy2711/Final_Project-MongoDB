@@ -2,10 +2,12 @@ const { MongoClient } = require("mongodb");
 
 // Replace the uri string with your connection string.
 const mongodbUrl = "mongodb://localhost:27017";
-
-let client = new MongoClient(mongodbUrl);
 const dbName = 'orders';
 const collectionName = 'order';
+
+// Khởi tạo client MongoDB
+let client = new MongoClient(mongodbUrl);
+
 
 const dbCollection = client.db(dbName).collection(collectionName);
 
@@ -175,48 +177,21 @@ async function outputDB() {
     }
 }
 
-async function getOrderById(orderID) {
-    let client;
-    try {
-        client = await MongoClient.connect(mongodbUrl);
-        console.log('Connected to MongoDB successfully!!!');
-        const db = client.db(dbName);
-        const ordersCollection = db.collection(collectionName);
+async function getnextIDNumber(client, dbName, collectionName) {
+    const db = client.db(dbName);
+    const collection = db.collection(collectionName);
 
-        console.log('Orders Collection:', ordersCollection); // Log giá trị của ordersCollection
+    const lastOrder = await collection.find().sort({ orderID: -1 }).limit(1).toArray();
 
-        const query = { orderID: { $regex: orderID, $options: 'i' } };
-        console.log('Query:', query);
-
-        const editOrder = await ordersCollection.findOne(query);
-        console.log('Edit Order:', editOrder);
-
-        return editOrder;
-    } catch (err) {
-        console.error('Error in getOrderById:', err);
-        throw err;
-    } finally {
-        if (client) {
-            await client.close();
-        }
+    if (lastOrder.length === 0) {
+        return 1;
+    } else {
+        const lastID = lastOrder[0].orderID;
+        const nextIDNumber = parseInt(lastID.replace("OD202400", "")) + 1;
+        return nextIDNumber;
     }
 }
 
-
-// async function getnextIDNumber(client, dbName, collectionName) {
-//     const db = client.db(dbName);
-//     const collection = db.collection(collectionName);
-
-//     const lastOrder = await collection.find().sort({ orderID: -1 }).limit(1).toArray();
-
-//     if (lastOrder.length === 0) {
-//         return 1;
-//     } else {
-//         const lastID = lastOrder[0].orderID;
-//         const nextIDNumber = parseInt(lastID.replace("OD202400", "")) + 1;
-//         return nextIDNumber;
-//     }
-// }
 
 module.exports = {
     connectToMongoDB,
@@ -227,7 +202,9 @@ module.exports = {
     deleteOrder,
     deleteAllOrders,
     getOrderIDs,
-    getOrderById,
+    getnextIDNumber,
     outputDB,
-    dbCollection
+    dbCollection,
+    mongodbUrl,
+    dbName
 }

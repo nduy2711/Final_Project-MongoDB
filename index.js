@@ -2,17 +2,22 @@ const express = require('express')
 const app = express()
 const port = 3000
 const path = require('path')
+const { MongoClient } = require("mongodb");
+const { mongodbUrl } = require("./public/javascripts/mongodb");
+
 
 const bodyParser = require('body-parser');
 
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
 
 const querystring = require('querystring');
 
 const orderModule = require('./public/javascripts/orders')
-const mongodbModule = require("./public/javascripts/mongodb")
+const mongodbModule = require("./public/javascripts/mongodb");
 
+// Kết nối đến cơ sở dữ liệu MongoDB
 mongodbModule.connectToMongoDB()
     .then(() => {
         console.log('Connect to MongoDB successfully');
@@ -46,24 +51,59 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/pages/home.html');
 })
 
-app.get('/order', async (req,res) =>
-{
+app.get('/order', async (req, res) => {
     try {
         const orders = await mongodbModule.findOrderList();
         const html = orderModule.output(orders);
-        res.send(html) 
-    } catch(err) {
+        res.send(html)
+    } catch (err) {
         console.error('Failed to fetch documents', err);
         res.status(500).send('Failed to fetch documents');
     }
 })
 
-app.post('/createManyOrders' ,async (req, res, next) => {
-    const order = req.body;
-    mongodbModule.addManyOrders(order);
-    const message  = `${order.length} orders created successfully!`
-    res.json({message: message})
+app.post('/createManyOrders', async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const db = client.db('orders');
+        const collection = db.collection('order');
+
+        const orderDate = req.body.orderDate;
+        const totalAmount = req.body.totalAmount;
+        const orderStatus = req.body.orderStatus;
+        const paymentMethod = req.body.paymentMethod;
+        const image = req.file.filename;
+
+        const newId = 'OD202400' + (await collection.countDocuments({}) + 1).toString().padStart(4, '0');
+
+        const order = {
+            orderID: newId,
+            orderDate: orderDate,
+            totalAmount: totalAmount,
+            orderStatus: orderStatus,
+            paymentMethod: paymentMethod,
+            image: image
+        };
+
+        const insertedDocument = await collection.insertOne(order);
+
+        const message = `${insertedDocument.insertedCount} product created successfully!`;
+        res.json({ message: message });
+    } catch (err) {
+        console.error('Error creating product:', err);
+        res.status(500).send('Internal Server Error');
+    }
 });
+
+// app.post('/createManyOrders', async (req, res, next) => {
+//     const order = req.body;
+//     mongodbModule.addManyOrders(order);
+//     const message = `${order.length} orders created successfully!`
+//     res.json({ message: message })
+// });
 
 app.delete('/api/delete/:orderID', async (req, res) => {
     const orderID = req.params.orderID;
@@ -100,25 +140,25 @@ app.get('/api/orderIDs', async (req, res) => {
     }
 });
 
-app.get('/read',async (req, res) => {
+app.get('/read', async (req, res) => {
     const paymentMethod = req.query.paymentMethod;
-    const minPrice = req.query.minPrice; 
+    const minPrice = req.query.minPrice;
     const maxPrice = req.query.maxPrice;
     const query = {};
 
     if (paymentMethod) {
-        query.paymentMethod = {$regex: paymentMethod, $options: 'i'}
+        query.paymentMethod = { $regex: paymentMethod, $options: 'i' }
     }
     if (minPrice) {
-        query.totalAmount = {$gte: parseFloat(minPrice)};
+        query.totalAmount = { $gte: parseFloat(minPrice) };
     }
-    
+
     if (minPrice && maxPrice) {
-        query.totalAmount = {$gte: parseFloat(minPrice), $lte: parseFloat(maxPrice)};
+        query.totalAmount = { $gte: parseFloat(minPrice), $lte: parseFloat(maxPrice) };
     } else if (minPrice) {
-        query.totalAmount = {$lte: parseFloat(minPrice)};
+        query.totalAmount = { $lte: parseFloat(minPrice) };
     } else if (maxPrice) {
-        query.totalAmount = {$gte: parseFloat(maxPrice)};
+        query.totalAmount = { $gte: parseFloat(maxPrice) };
     }
 
     try {
@@ -203,14 +243,14 @@ app.get('/read',async (req, res) => {
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Failed to search orders');
-    }    
+    }
 })
 
 app.get('/read/for/update', async (req, res) => {
     const orderID = req.query.orderID;
-    
+
     try {
-        const editOrder = await mongodbModule.getOrderById(orderID);
+        const editOrder = await mongodbModule.getOrderIDs(orderID);
 
         const queryParams = querystring.stringify(editOrder);
         res.redirect(`/pages/update.html?${queryParams}`);
