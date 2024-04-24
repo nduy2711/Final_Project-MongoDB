@@ -8,9 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-    <script src="../javascripts/mongodb.js"></script>
     <title>Create Order</title>
-    
 </head>
 <body>
     <header>
@@ -44,8 +42,8 @@
     <section class="create-order" id="sec-2">
         <div class="container">
             <form id="orderForm" action="/createManyOrders" method="POST" enctype="multipart/form-data">
-                <!-- <label for="orderID">Order ID:</label><br>
-                <input type="text" id="orderID" name="orderID"><br> -->
+                <label for="orderID">Order ID:</label><br>
+                <input type="text" id="orderID" name="orderID"><br>
                         
                 <label for="orderDate">Order Date:</label><br>
                 <input type="date" id="orderDate" name="orderDate"><br>
@@ -125,9 +123,9 @@
     });
 
     const sr = ScrollReveal ({
-	distance: '45px',
-	duration: 2700,
-	reset: true
+	    distance: '45px',
+	    duration: 2700,
+	    reset: true
     })
 
     sr.reveal('.home-text',{delay:350, origin:'left'})
@@ -138,49 +136,54 @@
     //mongodb
     var orders = [];
 
-    async function connectToMongoDB() {
-        try {
-            client = await MongoClient.connect(mongodbUrl);
-            dbCollection = client.db(dbName).collection(collectionName);
-        } catch (err) {
-            throw err;
-        }   
-    }   
+    function addPrefixToId(lastID) {
+        const prefix = 'OD202400';
+        const newId = prefix + lastID;
+        return newId;
+    }
 
-    async function getID() {
-        var id = getnextIDNumber();
-        return id;
-    } 
+    fetch('/getOrderId')
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Failed to fetch order ID');
+        })
+        .then(data => {
+            const lastID = data.lastOrderID;
+            const newId = addPrefixToId(lastID);
+            console.log(newId);
+            document.getElementById('orderID').value = newId; // Đặt giá trị của input ẩn ID
+        })
+        .catch(error => {
+            console.error('Error fetching order ID:', error);
+        });
 
-    async function addOrder() {
-        await connectToMongoDB();
-        var orderID = await getID();
+    function addOrder() {
+        var orderID = document.getElementById('orderID').value
+        var numericPart = parseInt(orderID.substring(8)) + 1; // Lấy phần số sau tiền tố 'OD202400' và tăng lên 1
+        var currentOrderId = 'OD202400' + String(numericPart).padStart(2, '0'); // Tạo ID mới
         var orderDate = document.getElementById("orderDate").value;
         var totalAmount = document.getElementById("totalAmount").value;
         var orderStatus = document.getElementById("orderStatus").value;
         var paymentMethod = document.getElementById("paymentMethod").value;
-        var images = document.getElementById("image").files; // Lấy danh sách các tệp đã chọn
-        for (var i = 0; i < images.length; i++) {
-            var reader = new FileReader();
-            reader.onload = function(event) {
-                var imageData = event.target.result; // Dữ liệu của tệp hình ảnh đã chọn
-                var order = {
-                    orderID: orderID,
-                    orderDate: orderDate,
-                    totalAmount: totalAmount,
-                    orderStatus: orderStatus,
-                    paymentMethod: paymentMethod,
-                    image: imageData // Lưu dữ liệu hình ảnh vào đối tượng order
-                };
-            
-                orders.push(order);
-                outputMessage(`The order [${order.orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
-                //currentOrderID++; // Tăng giá trị của currentOrderID
-            };
+        var images = document.getElementById("image").value; // Lấy danh sách các tệp đã chọn
+        var fileName = images.split('\\').pop();
         
-            reader.readAsDataURL(images[i]); // Đọc dữ liệu của từng tệp hình ảnh
-        }
+        var order = {
+            orderID: orderID,
+            orderDate: orderDate,
+            totalAmount: totalAmount,
+            orderStatus: orderStatus,
+            paymentMethod: paymentMethod,
+            image: fileName // Lưu dữ liệu hình ảnh vào đối tượng order
+        };
+    
+        orders.push(order);
+        outputMessage(`The order [${order.orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
+        document.getElementById('orderID').value = currentOrderId;
     }
+
 
     function submitOrders() {
         fetch('/createManyOrders', {
