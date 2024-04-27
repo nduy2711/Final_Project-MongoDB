@@ -2,10 +2,12 @@ const { MongoClient } = require("mongodb");
 
 // Replace the uri string with your connection string.
 const mongodbUrl = "mongodb://localhost:27017";
-
-let client = new MongoClient(mongodbUrl);
 const dbName = 'orders';
 const collectionName = 'order';
+
+// Khởi tạo client MongoDB
+let client = new MongoClient(mongodbUrl);
+
 
 const dbCollection = client.db(dbName).collection(collectionName);
 
@@ -354,7 +356,9 @@ async function getOrderDetailsByID(orderID) {
             // Nếu tìm thấy đơn hàng, trả về thông tin chi tiết của đơn hàng
             return {
                 orderID: order.orderID,
+                orderDate: order.orderDate,
                 totalAmount: order.totalAmount,
+                orderStatus: order.orderStatus,
                 paymentMethod: order.paymentMethod,
                 image: order.image
             };
@@ -368,9 +372,6 @@ async function getOrderDetailsByID(orderID) {
         throw error; // Ném lỗi để bên ngoài có thể xử lý nếu cần
     }
 }
-
-
-
 
 // async function getnextIDNumber(client, dbName, collectionName) {
 //     const db = client.db(dbName);
@@ -397,8 +398,13 @@ module.exports = {
     addOrder,
     getOrderById,
     outputDB,
-    dbCollection,
     outputDBUD,
     findRead,
-    getOrderDetailsByID
+    getOrderDetailsByID,
+    deleteAllOrders,
+    getOrderIDs,
+    outputDB,
+    dbCollection,
+    mongodbUrl,
+    dbName
 }

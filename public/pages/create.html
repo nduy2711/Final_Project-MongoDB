@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../stylesheets/anopage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
     <title>Create Order</title>
 </head>
+
 <body>
     <header>
         <a href="#" class="logo"><img src="../images/VanLang-logo.png" alt=""></a>
@@ -21,16 +24,16 @@
             <li><a href="./read-for-update.html">Update</a></li>
             <li><a href="./search.html">Find</a></li>
         </ul>
-        <a href="" class="manager-icon" ><i class="fa-solid fa-user-tie"></i></a>
+        <a href="" class="manager-icon"><i class="fa-solid fa-user-tie"></i></a>
     </header>
 
     <section class="home" id="sec-1">
         <div class="home-text">
             <h3>Create</h3>
             <h1>Order</h1>
-            <h5>This is homepage management by <span>Le Nhat Duy</span></h5>
+            <h5>This is homepage management by <span>VanLang University</span></h5>
             <p>Simplify order creation for seamless business management.</p>
-            <button class="btn">Create</button>
+            <button class="btn" onclick="scrollToCreateSection()">Create</button>
         </div>
         <div class="home-img">
             <img src="../images/box.png" alt="">
@@ -39,28 +42,29 @@
         <a href=""></a>
     </section>
 
-    <section class="create-order" id="sec-2">
+    <section class="create-order" id="sec-2" style="display: none;">
         <div class="container">
             <form id="orderForm" action="/createManyOrders" method="POST" enctype="multipart/form-data">
                 <label for="orderID">Order ID:</label><br>
-                <input type="text" id="orderID" name="orderID"><br>
-                        
+                <input type="text" id="orderID" name="orderID" readonly><br>
+
                 <label for="orderDate">Order Date:</label><br>
                 <input type="date" id="orderDate" name="orderDate"><br>
-                        
+
                 <label for="totalAmount">Total Amount:</label><br>
                 <input type="number" id="totalAmount" name="totalAmount"><br>
-                        
+
                 <label for="orderStatus">Order Status:</label><br>
-                <input type="text" id="orderStatus" name="orderStatus"><br>
-                        
+                <input type="text" id="orderStatus" name="orderStatus" pattern="[A-Za-z ]+"><br>
+
                 <label for="paymentMethod">Payment Method:</label><br>
-                <input type="text" id="paymentMethod" name="paymentMethod"><br>
-                        
+                <input type="text" id="paymentMethod" name="paymentMethod" pattern="[A-Za-z ]+"><br>
+
                 <label for="image">Image:</label><br>
                 <input type="file" id="image" name="image"><br><br>
                 <input type="button" value="Add" onclick="addOrder()">
                 <input type="button" value="Submit" onclick="submitOrders()">
+                <input type="button" value="Add as JSON" onclick="addOrderJSON()">
             </form>
             <div id="message"></div>
     </section>
@@ -73,7 +77,7 @@
             <a href="#">Brandings</a>
             <a href="#">Offline</a>
         </div>
-        
+
         <div class="footer-box">
             <h3>About</h3>
             <a href="#">Our story</a>
@@ -93,9 +97,9 @@
             <div class="social">
                 <a href=""><i class="fa-brands fa-instagram"></i></a>
                 <a href=""><i class="fa-brands fa-github"></i></a>
-                <a href=""><i class="fa-brands fa-facebook"></i></a>    
+                <a href=""><i class="fa-brands fa-facebook"></i></a>
             </div>
-            
+
         </div>
     </section>
 </body>
@@ -106,7 +110,7 @@
 <script>
     const header = document.querySelector("header");
 
-    window.addEventListener("scroll", function(){
+    window.addEventListener("scroll", function () {
         header.classList.toggle("sticky", window.scrollY > 60)
     })
 
@@ -117,7 +121,7 @@
     const createOrderSection = document.querySelector(".create-order");
 
     // Xử lý sự kiện click trên nút "Create"
-    createButton.addEventListener("click", function(event) {
+    createButton.addEventListener("click", function (event) {
         event.preventDefault();
         createOrderSection.scrollIntoView({ behavior: 'smooth' });
     });
@@ -128,10 +132,10 @@
 	    reset: true
     })
 
-    sr.reveal('.home-text',{delay:350, origin:'left'})
-    sr.reveal('.home-img',{delay:350, origin:'right'})
+    sr.reveal('.home-text', { delay: 350, origin: 'left' })
+    sr.reveal('.home-img', { delay: 350, origin: 'right' })
 
-    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact',{delay:200, origin:'bottom'})
+    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact', { delay: 200, origin: 'bottom' })
 
     //mongodb
     var orders = [];
@@ -159,6 +163,28 @@
             console.error('Error fetching order ID:', error);
         });
 
+    function addOrderJSON() {
+        fetch('/addOrderJSON')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text(); // Đọc dữ liệu trả về dưới dạng text
+            })
+            .then(data => {
+                console.log(data); // Log kết quả trả về từ server
+                alert(data); // Hiển thị thông báo cho người dùng
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message); // Hiển thị thông báo lỗi cho người dùng
+            });
+    }
+
+    function containsNumber(input) {
+        return /\d/.test(input);
+    }
+
     function addOrder() {
         var orderID = document.getElementById('orderID').value
         var numericPart = parseInt(orderID.substring(8)) + 1; // Lấy phần số sau tiền tố 'OD202400' và tăng lên 1
@@ -170,6 +196,19 @@
         var images = document.getElementById("image").value; // Lấy danh sách các tệp đã chọn
         var fileName = images.split('\\').pop();
         
+           // Kiểm tra xem các trường nhập liệu đã được điền đầy đủ chưa
+        if (!orderID || !orderDate || !totalAmount || !orderStatus || !paymentMethod || !fileName) {
+            outputMessage("Please fill in all required fields", 'red');
+            return; // End the function if any field is empty
+        }
+
+            // Kiểm tra xem giá trị của orderStatus và paymentMethod có chứa số không
+        if (containsNumber(orderStatus) || containsNumber(paymentMethod)) {
+            outputMessage("Please enter text only for Order Status and Payment Method", 'red');
+            return; // End the function if either field contains a number
+        }
+
+
         var order = {
             orderID: orderID,
             orderDate: orderDate,
@@ -188,18 +227,18 @@
     function submitOrders() {
         fetch('/createManyOrders', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orders)
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Response from server: ', data);
-            alert(data.message);
-            resetForm();
-        })
-        .catch(err => {
-            console.error('Error: ',err);
-        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from server: ', data);
+                alert(data.message);
+                resetForm();
+            })
+            .catch(err => {
+                console.error('Error: ', err);
+            })
     }
 
     function resetForm() {
@@ -218,6 +257,13 @@
         messageElement.textContent = message;
         messageElement.style.color = color;
     }
+
+    function scrollToCreateSection() {
+        const createSection = document.getElementById('sec-2');
+        createSection.style.display = ''; // Hiển thị phần tử
+        createSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
 </script>
 
 </html>

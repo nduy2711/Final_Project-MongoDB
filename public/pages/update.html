@@ -81,14 +81,22 @@
             <label for="orderID">Order ID:</label>
             <input type="text" id="orderID" name="orderID" readonly><br><br>
         
-            <label for="totalAmount">Total Amount:</label>
-            <input type="number" id="totalAmount" name="totalAmount"><br><br>
+            <label for="orderDate">order Date:</label>
+            <input type="date" id="orderDate" name="orderDate"><br><br>
         
+            <label for="totalAmount">Total Amount:</label>
+            <input type="text" id="totalAmount" name="totalAmount"><br><br>
+
+            <label for="updateOrderStatus">Order Status:</label>
+            <input type="text" id="orderStatus" name="updateOrderStatus"><br><br>
+
             <label for="paymentMethod">Payment Method:</label>
             <input type="text" id="paymentMethod" name="paymentMethod"><br><br>
         
             <label for="image">Image:</label>
             <input type="file" id="image" name="image"><br><br>
+
+            <img id="displayImage" src="" alt="Order Image" style="max-width: 200px;"><br><br>
         
             <button type="button" onclick="updateOrder()">Update</button>
         </form>
@@ -101,46 +109,92 @@
     document.getElementById('orderID').value = orderID;
     
     fetch(`/getOrderDetails?orderID=${orderID}`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('totalAmount').value = data.totalAmount;
-            document.getElementById('paymentMethod').value = data.paymentMethod;
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
         })
-        .catch(err => {
-            console.error('Error fetching order details:', err);
-        });
-    function updateOrder() {
-        const orderID = document.getElementById('orderID').value;
-        const totalAmount = document.getElementById('totalAmount').value;
-        const paymentMethod = document.getElementById('paymentMethod').value;
-        const image = document.getElementById('image').files[0]; // Lấy file hình ảnh
-        
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const imageData = event.target.result; // Dữ liệu của hình ảnh dưới dạng base64
-            const updatedOrder = {
-                orderID: orderID,
-                totalAmount: totalAmount,
-                paymentMethod: paymentMethod,
-                image: imageData // Thêm dữ liệu hình ảnh vào đối tượng cập nhật
-            };
-        
-            fetch('/update', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedOrder)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Response from server:', data);
-                alert(data.message);
-            })
-            .catch(err => {
-                alert('Cannot update: ' + err);
-            });
-        };
-    
-        reader.readAsDataURL(image); // Đọc dữ liệu của hình ảnh dưới dạng base64
+        .then(data => {
+            document.getElementById('orderID').value = data.orderID; // Đảm bảo bạn có trường orderID trong đối tượng data trả về
+            document.getElementById('orderDate').value = data.orderDate;
+            document.getElementById('totalAmount').value = data.totalAmount;
+            document.getElementById('orderStatus').value = data.orderStatus;
+            document.getElementById('paymentMethod').value = data.paymentMethod;
+            document.getElementById('displayImage').src = `./public/images/${data.image}`
+        })
+        function containsNumber(input) {
+        return /\d/.test(input);
     }
+
+    async function updateOrder() {
+        const orderID = document.getElementById('orderID').value;
+        const orderDate = document.getElementById('orderDate').value;
+        const totalAmount = document.getElementById('totalAmount').value;
+        const orderStatus = document.getElementById('orderStatus').value;
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const imageInput = document.getElementById('image').value;
+        const fileName = imageInput.split('\\').pop();
+        console.log(fileName); 
+
+        // Kiểm tra xem các trường nhập liệu đã được điền đầy đủ chưa
+        if (!orderID || !orderDate || !totalAmount || !paymentMethod || !orderStatus || !fileName) {
+            alert("Please fill in all required fields");
+            return; // Dừng thực hiện nếu bất kỳ trường nào còn thiếu
+        }
+    
+        // Kiểm tra xem orderStatus và paymentMethod có chứa số không
+        if (containsNumber(orderStatus) || containsNumber(paymentMethod)) {
+            alert("Please enter text only for Order Status and Payment Method!");
+            return; // Dừng thực hiện nếu có số trong Order Status hoặc Payment Method
+        }
+
+        try {
+            const response = await fetch(`/getOrderDetails?orderID=${orderID}`);
+            const existingOrder = await response.json();
+            console.log(existingOrder.totalAmount);
+            console.log(existingOrder.image);
+
+            if (response.ok) {
+                // So sánh thông tin cũ và mới
+                const isDataChanged = orderDate !== existingOrder.orderDate ||
+                            totalAmount !== existingOrder.totalAmount ||
+                            paymentMethod !== existingOrder.paymentMethod ||
+                            orderStatus !== existingOrder.orderStatus ||
+                            fileName !== existingOrder.image;
+
+                // Kiểm tra xem thông tin có được thay đổi không
+                if (!isDataChanged) {
+                    alert(`orderID: ${orderID} không có thông tin nào được cập nhật!!!`);
+                    return; // Dừng thực hiện nếu không có gì thay đổi
+                }
+
+                // Gửi yêu cầu cập nhật
+                const updateResponse = await fetch('/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        orderID: orderID,
+                        orderDate: orderDate,
+                        totalAmount: totalAmount,
+                        paymentMethod: paymentMethod,
+                        orderStatus: orderStatus,
+                        image: fileName
+                    })
+                });
+
+                const updateData = await updateResponse.json();
+                alert(updateData.message);
+            } else {
+                throw new Error('Không thể lấy thông tin đơn hàng hiện tại');
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    }
+
 </script>
 </html>

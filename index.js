@@ -2,10 +2,11 @@ const express = require('express')
 const app = express()
 const port = 3000
 const path = require('path')
-
+const { MongoClient } = require("mongodb");
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const querystring = require('querystring');
@@ -14,12 +15,12 @@ const orderModule = require('./public/javascripts/orders')
 const mongodbModule = require("./public/javascripts/mongodb")
 const { url } = require('inspector');
 
-const { MongoClient } = require('mongodb');
 const mongodbUrl = "mongodb://localhost:27017";
 let client = new MongoClient(mongodbUrl);
 const dbName = 'orders';
 const collectionName = 'order';
 
+// Kết nối đến cơ sở dữ liệu MongoDB
 mongodbModule.connectToMongoDB()
     .then(() => {
         console.log('Connect to MongoDB successfully');
@@ -53,13 +54,12 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/pages/home.html');
 })
 
-app.get('/order', async (req,res) =>
-{
+app.get('/order', async (req, res) => {
     try {
         const orders = await mongodbModule.findOrderList();
         const html = orderModule.output(orders);
-        res.send(html) 
-    } catch(err) {
+        res.send(html)
+    } catch (err) {
         console.error('Failed to fetch documents', err);
         res.status(500).send('Failed to fetch documents');
     }
@@ -82,6 +82,26 @@ app.post('/createManyOrders' ,async (req, res, next) => {
     mongodbModule.addManyOrders(order);
     const message  = `${order.length} orders created successfully!`
     res.json({message: message})
+});
+
+app.get('/addOrderJSON', (req, res) => {
+    const filePath = path.join(__dirname, 'JSON', 'order.json'); // Đường dẫn đến file JSON
+
+    fs.readFile(filePath, 'utf8', async (err, data) => {
+        if (err) {
+            console.error('Error reading the file:', err);
+            return res.status(500).send('Unable to read file');
+        }
+
+        try {
+            const orders = JSON.parse(data); // Phân tích dữ liệu JSON thành mảng đơn hàng
+            await mongodbModule.addManyOrders(orders); // Thêm các đơn hàng vào cơ sở dữ liệu
+            res.status(200).send('Orders added successfully');
+        } catch (parseError) {
+            console.error('Error parsing JSON:', parseError);
+            res.status(500).send('Error parsing JSON');
+        }
+    });
 });
 
 app.delete('/api/delete/:orderID', async (req, res) => {
@@ -119,25 +139,25 @@ app.get('/api/orderIDs', async (req, res) => {
     }
 });
 
-app.get('/read',async (req, res) => {
+app.get('/read', async (req, res) => {
     const paymentMethod = req.query.paymentMethod;
-    const minPrice = req.query.minPrice; 
+    const minPrice = req.query.minPrice;
     const maxPrice = req.query.maxPrice;
     const query = {};
 
     if (paymentMethod) {
-        query.paymentMethod = {$regex: paymentMethod, $options: 'i'}
+        query.paymentMethod = { $regex: paymentMethod, $options: 'i' }
     }
     if (minPrice) {
-        query.totalAmount = {$gte: parseFloat(minPrice)};
+        query.totalAmount = { $gte: parseFloat(minPrice) };
     }
-    
+
     if (minPrice && maxPrice) {
-        query.totalAmount = {$gte: parseFloat(minPrice), $lte: parseFloat(maxPrice)};
+        query.totalAmount = { $gte: parseFloat(minPrice), $lte: parseFloat(maxPrice) };
     } else if (minPrice) {
-        query.totalAmount = {$lte: parseFloat(minPrice)};
+        query.totalAmount = { $lte: parseFloat(minPrice) };
     } else if (maxPrice) {
-        query.totalAmount = {$gte: parseFloat(maxPrice)};
+        query.totalAmount = { $gte: parseFloat(maxPrice) };
     }
 
     try {
@@ -222,7 +242,7 @@ app.get('/read',async (req, res) => {
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Failed to search orders');
-    }    
+    }
 })
 
 app.get('/getOrderDetails', async (req, res) => {
@@ -269,14 +289,31 @@ app.get('/read/for/update', async (req, res) => {
     }
 });
 
-
-
 app.put('/update', async (req, res) => {
     try {
         const newOrder = req.body;
         const orderID = newOrder.orderID;
 
         const ordersCollection = mongodbModule.dbCollection;
+
+        // Lấy thông tin đơn hàng hiện có từ cơ sở dữ liệu
+        const existingOrder = await ordersCollection.findOne({ orderID: orderID });
+
+        // So sánh thông tin mới với thông tin hiện có
+        const isDataChanged =
+            newOrder.orderDate !== existingOrder.orderDate ||
+            newOrder.totalAmount !== existingOrder.totalAmount ||
+            newOrder.orderStatus !== existingOrder.orderStatus ||
+            newOrder.paymentMethod !== existingOrder.paymentMethod ||
+            newOrder.image !== existingOrder.image;
+
+        // Kiểm tra xem thông tin có được thay đổi không
+        if (!isDataChanged) {
+            res.json({ message: "Không có thông tin nào được cập nhật" });
+            return;
+        }
+
+        // Thực hiện cập nhật chỉ khi có thông tin được thay đổi
         await ordersCollection.updateOne({ orderID: orderID }, {
             $set: {
                 orderDate: newOrder.orderDate,
@@ -294,3 +331,5 @@ app.put('/update', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
+
+

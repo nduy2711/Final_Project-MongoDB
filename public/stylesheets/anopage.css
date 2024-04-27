@@ -24,7 +24,7 @@ html {
 
 body {
     background: var(--bg-color);
-    color: var(--text-color)
+    color: var(--text-color);
 }
 
 header {
@@ -246,7 +246,7 @@ input[type="text"], input[type="number"], input[type="date"], input[type="file"]
 }
 
 input[type="submit"], input[type="button"] {
-    background-color: #4caf50;
+    background-color: #ff7f00;
     color: #fff;
     padding: 10px 20px;
     border: none;
@@ -256,7 +256,7 @@ input[type="submit"], input[type="button"] {
 }
 
 input[type="submit"]:hover, input[type="button"]:hover {
-    background-color: #45a049;
+    background-color: #e66900;
 }
 #message {
     margin-top: 10px;
