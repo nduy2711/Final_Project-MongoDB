@@ -63,10 +63,13 @@
         <form action="/read" method="GET" class="read">
             <label for="paymentMethod">Payment Method:</label><br>
             <input type="text" id="paymentMethod" name="paymentMethod"><br><br>
-            <label for="minPrice">Minimum Price:</label><br>
-            <input type="number" id="minPrice" name="minPrice"><br><br>
-            <label for="maxPrice">Maximum Price:</label><br>
-            <input type="number" id="maxPrice" name="maxPrice"><br><br>
+            <label for="priceRange">Price Range:</label><br>
+            <input type="radio" id="below100" name="priceRange" value="below100">
+            <label for="below100">Below 100</label><br>
+            <input type="radio" id="100to200" name="priceRange" value="100to200">
+            <label for="100to200">100 to 200</label><br>
+            <input type="radio" id="above200" name="priceRange" value="above200">
+            <label for="above200">Above 200</label><br><br>
             <button type="submit">Search</button>
           </form>
     </section>

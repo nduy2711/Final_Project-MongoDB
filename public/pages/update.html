@@ -89,49 +89,61 @@
 
             <label for="paymentMethod">Payment Method:</label>
             <input type="text" id="paymentMethod" name="paymentMethod"><br><br>
-
-            <label for="orderStatus">Order Status:</label>
-            <input type="text" id="orderStatus" name="orderStatus"><br><br>
-            
-            <label for="image">image:</label>
-            <input type="text" id="image" name="image"><br><br>
-
+        
+            <label for="image">Image:</label>
+            <input type="file" id="image" name="image"><br><br>
+        
             <button type="button" onclick="updateOrder()">Update</button>
         </form>
     </section>
 </body>
 <script>
-    const queryParams = new URLSearchParams(window.location.search);
-    const oldOrder = Object.fromEntries(queryParams.entries());
-    let newOrder = oldOrder;
-
-    document.getElementById('orderID').value = oldOrder.orderID;
-    document.getElementById('orderDate').value = oldOrder.orderDate;
-    document.getElementById('totalAmount').value = oldOrder.totalAmount;
-    document.getElementById('orderStatus').value = oldOrder.orderStatus;
-    document.getElementById('paymentMethod').value = oldOrder.paymentMethod;
-    document.getElementById('image').value = oldOrder.image;
-
-    function updateOrder() {
-        newOrder.orderDate = document.getElementById('orderDate').value;
-        newOrder.totalAmount = document.getElementById('totalAmount').value;
-        newOrder.orderStatus = document.getElementById('orderStatus').value;
-        newOrder.paymentMethod = document.getElementById('paymentMethod').value;
-        newOrder.image = document.getElementById('image').value;
-
-        fetch('/update', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newOrder)
-        })
+const queryParams = new URLSearchParams(window.location.search);
+    const orderID = queryParams.get('orderID');
+    
+    document.getElementById('orderID').value = orderID;
+    
+    fetch(`/getOrderDetails?orderID=${orderID}`)
         .then(response => response.json())
         .then(data => {
-            console.log('Response from server:', data);
-            alert(data.message);
+            document.getElementById('totalAmount').value = data.totalAmount;
+            document.getElementById('paymentMethod').value = data.paymentMethod;
         })
         .catch(err => {
-            alert('Cannot update: ' + err);
+            console.error('Error fetching order details:', err);
         });
+    function updateOrder() {
+        const orderID = document.getElementById('orderID').value;
+        const totalAmount = document.getElementById('totalAmount').value;
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const image = document.getElementById('image').files[0]; // Lấy file hình ảnh
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const imageData = event.target.result; // Dữ liệu của hình ảnh dưới dạng base64
+            const updatedOrder = {
+                orderID: orderID,
+                totalAmount: totalAmount,
+                paymentMethod: paymentMethod,
+                image: imageData // Thêm dữ liệu hình ảnh vào đối tượng cập nhật
+            };
+        
+            fetch('/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedOrder)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from server:', data);
+                alert(data.message);
+            })
+            .catch(err => {
+                alert('Cannot update: ' + err);
+            });
+        };
+    
+        reader.readAsDataURL(image); // Đọc dữ liệu của hình ảnh dưới dạng base64
     }
 </script>
 </html>

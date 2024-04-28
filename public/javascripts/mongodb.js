@@ -1,9 +1,9 @@
 const { MongoClient } = require("mongodb");
 
-// Replace the uri string with your connection string.
 const mongodbUrl = "mongodb://localhost:27017";
 const dbName = 'orders';
 const collectionName = 'order';
+
 
 // Khởi tạo client MongoDB
 let client = new MongoClient(mongodbUrl);
@@ -45,8 +45,13 @@ async function findOrderList() {
     return documents;
 }
 
+async function findRead(Order) {
+    const orderCollection = client.db(dbName).collection(collectionName);
+    const result = await orderCollection.find(Order).sort({orderID: -1}.limit(10).toArray());
+}
+
 async function addManyOrders(orders) {
-    const client = new MongoClient(mongodbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+    const client = new MongoClient(mongodbUrl);
 
     try {
         await client.connect();
@@ -64,19 +69,20 @@ async function addManyOrders(orders) {
         await client.close();
     }
 }
-
-async function deleteOrder(orderID) {
+async function deleteOrders(orderIDs) {
     try {
-        const result = await dbCollection.deleteOne({ orderID: orderID });
-        return result.deletedCount;
+        const deleteResults = await dbCollection.deleteMany({ _id: { $in: orderIDs } });
+        console.log(`Deleted ${deleteResults.deletedCount} orders.`);
+        return deleteResults.deletedCount;
     } catch (error) {
+        console.error('Error deleting orders:', error);
         throw error;
     }
 }
 
-async function deleteAllOrders() {
+async function deleteOrder(orderID) {
     try {
-        const result = await dbCollection.deleteMany({});
+        const result = await dbCollection.deleteOne({ orderID: orderID });
         return result.deletedCount;
     } catch (error) {
         throw error;
@@ -192,7 +198,6 @@ async function getnextIDNumber(client, dbName, collectionName) {
     }
 }
 
-
 module.exports = {
     connectToMongoDB,
     closeMongoDBConnection,
@@ -200,10 +205,11 @@ module.exports = {
     findOrderList,
     addManyOrders,
     deleteOrder,
-    deleteAllOrders,
+    deleteOrders,
     getOrderIDs,
     getnextIDNumber,
     outputDB,
+    findRead,
     dbCollection,
     mongodbUrl,
     dbName

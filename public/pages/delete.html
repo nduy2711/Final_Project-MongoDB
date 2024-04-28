@@ -10,7 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
         rel="stylesheet">
-    <title>Document</title>
+    <title>Delete Order</title>
 </head>
 
 <body>
@@ -33,29 +33,28 @@
             <h1>Order</h1>
             <h5>This is homepage management by <span>Le Nhat Duy</span></h5>
             <p>Efficiently remove orders to maintain a streamlined workflow.</p>
-            <button class="btn">Delete</button>
         </div>
         <div class="home-img">
             <img src="../images/box.png" alt="">
         </div>
     </section>
 
-    <div class="delete-order hide">
-        <div id="orderForm">
-            <div class="close-detele">
-                <i class="fa-solid fa-xmark"></i>
-            </div>
-            <h2>Delete Order</h2>
-            <form>
-                <label for="orderID">Order ID:</label><br>
-                <select id="orderID"></select><br>
+    <section class="content">
+        <form action="/read/for/update" method="GET" class="update">
+            <label for="orderID">Order ID:</label>
+            <input type="text" id="orderID" name="orderID"><br><br>
 
-                <button type="button" class="btn-delete" onclick="confirmDelete()">Xóa</button>
-                <button class="btn-delete-all" onclick="confirmDeleteAll()">Xóa Tất Cả</button>
-            </form>
+            <label for="orderStatus">Order Status:</label>
+            <input type="text" id="orderStatus" name="orderStatus"><br><br>
 
-        </div>
-    </div>
+            <button type="button" onclick="searchOrder()">Search</button>
+            <button type="reset">Reset</button>
+        </form>
+
+        <div class="search-results" id="searchResults"></div>
+
+        <button onclick="deleteSelectedOrders()">Delete Selected Orders</button>
+    </section>
 
     <section class="footer">
         <div class="footer-box">
@@ -87,125 +86,192 @@
                 <a href=""><i class="fa-brands fa-github"></i></a>
                 <a href=""><i class="fa-brands fa-facebook"></i></a>
             </div>
-
         </div>
     </section>
-</body>
 
-<script src="https://unpkg.com/scrollreveal"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
 
-<script>
-    const header = document.querySelector("header");
+    <script>
+        const header = document.querySelector("header");
 
-    window.addEventListener("scroll", function () {
-        header.classList.toggle("sticky", window.scrollY > 60)
-    })
-
-    const sr = ScrollReveal({
-        distance: '45px',
-        duration: 2700,
-        reset: true
-    })
-
-    sr.reveal('.home-text', { delay: 350, origin: 'left' })
-    sr.reveal('.home-img', { delay: 350, origin: 'right' })
-
-    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact', { delay: 200, origin: 'bottom' })
-
-    var btnDelete = document.querySelector('.btn');
-    var modal = document.querySelector('.delete-order');
-    var iconClose = document.querySelector('.close-detele i');
-
-    function toggleModal(e) {
-        modal.classList.toggle('hide');
-        console.log('done');
-    }
-
-    btnDelete.addEventListener('click', toggleModal);
-    iconClose.addEventListener('click', toggleModal);
-    modal.addEventListener('click', function (e) {
-        if (e.target == this) {
-            toggleModal();
-        }
-    });
-
-    //mongodb
-
-    async function populateOrderIDs() {
-        // Lấy thẻ select để điền dữ liệu
-        const orderIDSelect = document.getElementById('orderID');
-        
-        try {
-            // Gửi yêu cầu để lấy danh sách orderIDs từ MongoDB
-            const response = await fetch('/api/orderIDs');
-            const orderIDs = await response.json();
-
-            // Xóa tất cả các option cũ trong dropdown list
-            orderIDSelect.innerHTML = '';
-
-            // Thêm các orderID mới vào dropdown list
-            orderIDs.forEach(orderID => {
-                const option = document.createElement('option');
-                option.value = orderID;
-                option.textContent = orderID;
-                orderIDSelect.appendChild(option);
-            });
-        } catch (error) {
-            console.error('Error fetching order IDs:', error);
-            alert('Đã xảy ra lỗi khi tải danh sách order IDs.');
-        }
-    }
-
-    function confirmDelete() {
-        const orderID = document.getElementById('orderID').value;
-        if (!orderID) {
-            alert('Vui lòng chọn Order ID để xóa.');
-            return;
-        }
-
-        if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này không?')) {
-            deleteOrder(orderID);
-        }
-    }
-
-    // Hàm xóa order
-    function deleteOrder(orderID) {
-        fetch(`/api/delete/${orderID}`, {
-            method: "DELETE"
+        window.addEventListener("scroll", function () {
+            header.classList.toggle("sticky", window.scrollY > 60)
         })
-            .then(response => response.text())
-            .then(message => {
-                alert(message);
-                window.location.reload();
-            })
-            .catch(error => {
-                console.error(error);
-                alert('Đã xảy ra lỗi khi xóa đơn hàng.');
-            });
-    }
 
-    function confirmDeleteAll() {
-        if (confirm('Bạn có chắc chắn muốn xóa tất cả đơn hàng không?')) {
-            deleteAllOrders();
-        }
-    }
-
-    function deleteAllOrders() {
-        fetch(`/api/deleteAll`, {
-            method: "DELETE"
+        const sr = ScrollReveal({
+            distance: '45px',
+            duration: 2700,
+            reset: true
         })
-            .then(response => response.text())
-            .then(message => {
-                alert(message);
-                window.location.reload();
-            })
-            .catch(error => {
-                console.error(error);
-                alert('Đã xảy ra lỗi khi xóa tất cả đơn hàng.');
-            });
-    }
 
-    window.onload = populateOrderIDs;
-</script>
+        sr.reveal('.home-text', { delay: 350, origin: 'left' })
+        sr.reveal('.home-img', { delay: 350, origin: 'right' })
+
+        sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact', { delay: 200, origin: 'bottom' })
+
+        var btnDelete = document.querySelector('.btn');
+        var modal = document.querySelector('.delete-order');
+        var iconClose = document.querySelector('.close-detele i');
+
+        function toggleModal(e) {
+            modal.classList.toggle('hide');
+            console.log('done');
+        }
+
+        //mongodb
+        let searchedOrders = [];
+
+        async function searchOrder() {
+            const orderID = document.getElementById('orderID').value;
+            const orderStatus = document.getElementById('orderStatus').value;
+
+            const searchParams = new URLSearchParams();
+            if (orderID) searchParams.append('orderID', orderID);
+            if (orderStatus) searchParams.append('orderStatus', orderStatus);
+
+            try {
+                const response = await fetch(`/read/for/update?${searchParams.toString()}`);
+                const searchedOrders = await response.json();
+                if (Array.isArray(searchedOrders)) {
+                    if (searchedOrders.length === 0) {
+                        // Hiển thị thông báo nếu không có đơn hàng nào được tìm thấy
+                        document.getElementById('searchResults').innerHTML = "<p>No orders found.</p>";
+                    } else {
+                        // Nếu có nhiều kết quả, hiển thị danh sách đơn hàng
+                        displaySearchResults(searchedOrders);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displaySearchResults(results) {
+            const searchResultsDiv = document.getElementById('searchResults');
+            const tableContainer = document.createElement('div'); // Tạo một div làm container cho bảng
+            tableContainer.style.overflowX = 'auto'; // Cho phép cuộn ngang khi bảng quá rộng
+            tableContainer.style.width = '100%'; // Đảm bảo rằng container của bảng tràn màn hình
+            tableContainer.appendChild(createTable(results)); // Thêm bảng vào container
+            searchResultsDiv.innerHTML = ''; // Xóa nội dung cũ trước khi thêm bảng mới
+            searchResultsDiv.appendChild(tableContainer); // Thêm container chứa bảng vào div kết quả tìm kiếm
+        }
+
+        function createTable(results) {
+            const table = document.createElement('table');
+            // CSS inline cho bảng
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.backgroundColor = '#fff';
+            table.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.1)';
+
+            const headers = ['Check box', 'Order ID', 'Order Date', 'Total Amount', 'Order Status', 'Payment Method', 'Image', 'Delete'];
+            const tableHeader = table.createTHead();
+            const headerRow = tableHeader.insertRow();
+
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                th.style.padding = '12px 15px';
+                th.style.textAlign = 'left';
+                th.style.backgroundColor = '#007bff';
+                th.style.color = '#fff';
+                headerRow.appendChild(th);
+            });
+
+            const tableBody = table.createTBody();
+            results.forEach(order => {
+                const row = tableBody.insertRow();
+                row.style.backgroundColor = row.rowIndex % 2 === 0 ? '#f2f2f2' : '#fff'; // Màu nền xen kẽ
+                row.innerHTML = `
+                <td style="padding: 12px 15px;">
+                    <input type="checkbox" class="order-checkbox" value="${order.orderID}">
+                </td>
+                
+                <td style="padding: 12px 15px;">${order.orderID}</td>
+                <td style="padding: 12px 15px;">${order.orderDate}</td>
+                <td style="padding: 12px 15px;">$${order.totalAmount}</td>
+                <td style="padding: 12px 15px;">${order.orderStatus}</td>
+                <td style="padding: 12px 15px;">${order.paymentMethod}</td>
+                <td style="padding: 12px 15px;"><img src="/public/images/${order.image}" alt="Order Image" style="max-width: 100px;"></td>
+                <td style="padding: 12px 15px;">
+                    <a onclick="deleteOrder('${order.orderID}')" class="edit-link" style="display: inline-block; padding: 10px 20px; background-color: #333; color: #fff; text-decoration: none; border-radius: 3px; cursor: pointer; transition: background-color 0.3s ease;">Delete</a>
+                </td>
+            `;
+
+            });
+
+            return table;
+        }
+
+        function confirmDelete() {
+            const orderID = document.getElementById('orderID').value;
+            if (!orderID) {
+                alert('Vui lòng chọn Order ID để xóa.');
+                return;
+            }
+
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này không?')) {
+                deleteOrder(orderID);
+            }
+        }
+
+        // Hàm xóa order
+        function deleteOrder(orderID) {
+            fetch(`/delete/${orderID}`, {
+                method: "DELETE"
+            })
+                .then(response => response.text())
+                .then(message => {
+                    alert(message);
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi xóa đơn hàng.');
+                });
+        }
+
+        async function deleteOrders(orderIDs) {
+            try {
+                const response = await fetch('/deleteMultipleOrders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ orderIDs })
+                });
+
+                const message = await response.text();
+                alert(message);
+                window.location.reload(); // Reload trang sau khi xóa
+            } catch (error) {
+                console.error('Error deleting orders:', error);
+                alert('An error occurred while deleting orders.');
+            }
+        }
+
+        function deleteSelectedOrders() {
+            const rows = document.querySelectorAll('table tbody tr');
+            const orderIDsToDelete = [];
+
+            rows.forEach(row => {
+                const checkbox = row.querySelector('.order-checkbox');
+                if (checkbox.checked) {
+                    const orderID = row.cells[1].textContent.trim(); // Lấy orderID từ cột thứ hai của hàng và loại bỏ khoảng trắng
+                    orderIDsToDelete.push(orderID);
+                }
+            });
+
+            if (orderIDsToDelete.length === 0) {
+                alert('Please select at least one order to delete.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${orderIDsToDelete.length} orders?`)) {
+                deleteOrders(orderIDsToDelete);
+            }
+        }
+
+    </script>
 
 </html>

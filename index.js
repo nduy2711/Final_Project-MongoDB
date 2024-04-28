@@ -2,17 +2,11 @@ const express = require('express')
 const app = express()
 const port = 3000
 const path = require('path')
-const { MongoClient } = require("mongodb");
-const { mongodbUrl } = require("./public/javascripts/mongodb");
-
 
 const bodyParser = require('body-parser');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-
-const querystring = require('querystring');
 
 const orderModule = require('./public/javascripts/orders')
 const mongodbModule = require("./public/javascripts/mongodb");
@@ -41,6 +35,8 @@ app.use(express.static(path.join(__dirname, 'public', 'stylesheets')));
 app.use(express.static(path.join(__dirname, 'public', 'pages')));
 app.use(express.static(path.join(__dirname)));
 app.use(express.static('pages'));
+app.use(express.json());
+
 
 app.use(express.urlencoded({
     extended: true
@@ -98,35 +94,52 @@ app.post('/createManyOrders', async (req, res) => {
     }
 });
 
-// app.post('/createManyOrders', async (req, res, next) => {
-//     const order = req.body;
-//     mongodbModule.addManyOrders(order);
-//     const message = `${order.length} orders created successfully!`
-//     res.json({ message: message })
-// });
+app.get('/api/search', async (req, res) => {
+    const { orderID } = req.query.orderID;
+    const { orderStatus } = req.query.orderStatus;
+    const query = {};
 
-app.delete('/api/delete/:orderID', async (req, res) => {
+    if (orderID) {
+        query.orderID = id;
+    }
+    if (orderStatus) {
+        query.orderStatus = { $regex: orderStatus, $options: 'i' };
+    }
+
+    try {
+        const searchResult = await mongodbModule.findDocuments(query);
+        if (searchResult.length === 0) {
+            res.status(404).send('No document found.');
+        } else if (searchResult.length === 1) {
+            res.json(searchResult[0]);
+        } else {
+            res.json(searchResult);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Failed to search orders');
+    }
+});
+
+app.delete('/delete/:orderID', async (req, res) => {
     const orderID = req.params.orderID;
     try {
-        const deletedCount = await mongodbModule.deleteOrder(orderID);
-        if (deletedCount === 1) {
-            res.send(`Đã xóa đơn hàng có ID = ${orderID} thành công.`);
-        } else {
-            res.send(`Không tìm thấy đơn hàng có ID = ${orderID}.`);
-        }
+        await mongodbModule.deleteOrder(orderID);
+        res.send(`Đã xóa đơn hàng có ID = ${orderID} thành công.`);
     } catch (error) {
         console.error('Error deleting order:', error);
         res.status(500).send('Đã xảy ra lỗi khi xóa đơn hàng.');
     }
 });
 
-app.delete('/api/deleteAll', async (req, res) => {
+app.post('/deleteMultipleOrders', async (req, res) => {
+    const orderIDs = req.body.orderIDs;
     try {
-        const deletedCount = await mongodbModule.deleteAllOrders();
-        res.send(`${deletedCount} đơn hàng đã được xóa thành công.`);
+        const deleteResults = await mongodbModule.deleteOrders(orderIDs);
+        res.send(`Deleted ${deleteResults} orders.`);
     } catch (error) {
-        console.error('Error deleting all orders:', error);
-        res.status(500).send('Đã xảy ra lỗi khi xóa tất cả đơn hàng.');
+        console.error('Error deleting orders:', error);
+        res.status(500).send('An error occurred while deleting orders.');
     }
 });
 
@@ -141,28 +154,26 @@ app.get('/api/orderIDs', async (req, res) => {
 });
 
 app.get('/read', async (req, res) => {
+    const priceRange = req.query.priceRange;
+
+    // Khởi tạo một biến để lưu trữ điều kiện tìm kiếm
+    let searchCondition = {};
+
+    // Xác định điều kiện tìm kiếm dựa trên mức giá được chọn
     const paymentMethod = req.query.paymentMethod;
-    const minPrice = req.query.minPrice;
-    const maxPrice = req.query.maxPrice;
-    const query = {};
-
     if (paymentMethod) {
-        query.paymentMethod = { $regex: paymentMethod, $options: 'i' }
+        searchCondition.paymentMethod = { $regex: paymentMethod, $options: 'i' }
     }
-    if (minPrice) {
-        query.totalAmount = { $gte: parseFloat(minPrice) };
-    }
-
-    if (minPrice && maxPrice) {
-        query.totalAmount = { $gte: parseFloat(minPrice), $lte: parseFloat(maxPrice) };
-    } else if (minPrice) {
-        query.totalAmount = { $lte: parseFloat(minPrice) };
-    } else if (maxPrice) {
-        query.totalAmount = { $gte: parseFloat(maxPrice) };
+    if (priceRange === 'below100') {
+        searchCondition = { totalAmount: { $lt: 100 } };
+    } else if (priceRange === '100to200') {
+        searchCondition = { totalAmount: { $gte: 100, $lte: 200 } };
+    } else if (priceRange === 'above200') {
+        searchCondition = { totalAmount: { $gt: 200 } };
     }
 
     try {
-        const searchResult = await mongodbModule.findDocuments(query);
+        const searchResult = await mongodbModule.findDocuments(searchCondition);
         const tableRowsHTML = searchResult.map(order => {
             return `
                 <tr>
@@ -248,15 +259,24 @@ app.get('/read', async (req, res) => {
 
 app.get('/read/for/update', async (req, res) => {
     const orderID = req.query.orderID;
+    const orderStatus = req.query.orderStatus;
+
+    const query = {};
+
+    if (orderID) {
+        query.orderID = { $regex: orderID, $options: 'i' };
+    }
+
+    if (orderStatus) {
+        query.orderStatus = { $regex: orderStatus, $options: 'i' };
+    }
 
     try {
-        const editOrder = await mongodbModule.getOrderIDs(orderID);
-
-        const queryParams = querystring.stringify(editOrder);
-        res.redirect(`/pages/update.html?${queryParams}`);
-    } catch (err) {
-        console.error('Error: ', err);
-        res.status(500).send('Internal server error');
+        const searchResult = await mongodbModule.findDocuments(query);
+        res.json(searchResult);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Failed to search orders');
     }
 });
 
