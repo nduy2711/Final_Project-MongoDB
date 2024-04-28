@@ -31,9 +31,9 @@
         <div class="home-text">
             <h3>Create</h3>
             <h1>Order</h1>
-            <h5>This is homepage management by <span>Le Nhat Duy</span></h5>
+            <h5>This is homepage management by <span>VanLang University</span></h5>
             <p>Simplify order creation for seamless business management.</p>
-            <button class="btn">Create</button>
+            <button class="btn" onclick="scrollToCreateSection()">Create</button>
         </div>
         <div class="home-img">
             <img src="../images/box.png" alt="">
@@ -42,7 +42,7 @@
         <a href=""></a>
     </section>
 
-    <section class="create-order" id="sec-2">
+    <section class="create-order" id="sec-2" style="display: none;">
         <div class="container">
             <form id="orderForm" action="/createManyOrders" method="POST" enctype="multipart/form-data">
                 <label for="orderID">Order ID:</label><br>
@@ -55,15 +55,16 @@
                 <input type="number" id="totalAmount" name="totalAmount"><br>
 
                 <label for="orderStatus">Order Status:</label><br>
-                <input type="text" id="orderStatus" name="orderStatus"><br>
+                <input type="text" id="orderStatus" name="orderStatus" pattern="[A-Za-z ]+"><br>
 
                 <label for="paymentMethod">Payment Method:</label><br>
-                <input type="text" id="paymentMethod" name="paymentMethod"><br>
+                <input type="text" id="paymentMethod" name="paymentMethod" pattern="[A-Za-z ]+"><br>
 
                 <label for="image">Image:</label><br>
                 <input type="file" id="image" name="image"><br><br>
                 <input type="button" value="Add" onclick="addOrder()">
                 <input type="button" value="Submit" onclick="submitOrders()">
+                <input type="button" value="Add as JSON" onclick="addOrderJSON()">
             </form>
             <div id="message"></div>
     </section>
@@ -105,6 +106,7 @@
 
 <script src="https://unpkg.com/scrollreveal"></script>
 
+
 <script>
     const header = document.querySelector("header");
 
@@ -124,10 +126,10 @@
         createOrderSection.scrollIntoView({ behavior: 'smooth' });
     });
 
-    const sr = ScrollReveal({
-        distance: '45px',
-        duration: 2700,
-        reset: true
+    const sr = ScrollReveal ({
+	    distance: '45px',
+	    duration: 2700,
+	    reset: true
     })
 
     sr.reveal('.home-text', { delay: 350, origin: 'left' })
@@ -138,37 +140,89 @@
     //mongodb
     var orders = [];
 
+    function addPrefixToId(lastID) {
+        const prefix = 'OD202400';
+        const newId = prefix + lastID;
+        return newId;
+    }
+
+    fetch('/getOrderId')
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Failed to fetch order ID');
+        })
+        .then(data => {
+            const lastID = data.lastOrderID;
+            const newId = addPrefixToId(lastID);
+            console.log(newId);
+            document.getElementById('orderID').value = newId; // Đặt giá trị của input ẩn ID
+        })
+        .catch(error => {
+            console.error('Error fetching order ID:', error);
+        });
+
+    function addOrderJSON() {
+        fetch('/addOrderJSON')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text(); // Đọc dữ liệu trả về dưới dạng text
+            })
+            .then(data => {
+                console.log(data); // Log kết quả trả về từ server
+                alert(data); // Hiển thị thông báo cho người dùng
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message); // Hiển thị thông báo lỗi cho người dùng
+            });
+    }
+
+    function containsNumber(input) {
+        return /\d/.test(input);
+    }
+
     function addOrder() {
+        var orderID = document.getElementById('orderID').value
+        var numericPart = parseInt(orderID.substring(8)) + 1; // Lấy phần số sau tiền tố 'OD202400' và tăng lên 1
+        var currentOrderId = 'OD202400' + String(numericPart).padStart(2, '0'); // Tạo ID mới
         var orderDate = document.getElementById("orderDate").value;
         var totalAmount = document.getElementById("totalAmount").value;
         var orderStatus = document.getElementById("orderStatus").value;
         var paymentMethod = document.getElementById("paymentMethod").value;
-        var image = document.getElementById("image").files[0];
+        var images = document.getElementById("image").value; // Lấy danh sách các tệp đã chọn
+        var fileName = images.split('\\').pop();
+        
+           // Kiểm tra xem các trường nhập liệu đã được điền đầy đủ chưa
+        if (!orderID || !orderDate || !totalAmount || !orderStatus || !paymentMethod || !fileName) {
+            outputMessage("Please fill in all required fields", 'red');
+            return; // End the function if any field is empty
+        }
 
-        // const formData = new FormData();
-        // formData.append('orderDate', orderDate);
-        // formData.append('totalAmount', totalAmount);
-        // formData.append('orderStatus', orderStatus);
-        // formData.append('paymentMethod', paymentMethod);
-        // formData.append('image', image);
+            // Kiểm tra xem giá trị của orderStatus và paymentMethod có chứa số không
+        if (containsNumber(orderStatus) || containsNumber(paymentMethod)) {
+            outputMessage("Please enter text only for Order Status and Payment Method", 'red');
+            return; // End the function if either field contains a number
+        }
 
-        reader.onload = function (event) {
-            var imageData = event.target.result;
-            var order = {
-                orderID: orderID,
-                orderDate: orderDate,
-                totalAmount: totalAmount,
-                orderStatus: orderStatus,
-                paymentMethod: paymentMethod,
-                image: imageData
-            };
 
-            orders.push(order);
-            outputMessage(`The order [${orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
+        var order = {
+            orderID: orderID,
+            orderDate: orderDate,
+            totalAmount: totalAmount,
+            orderStatus: orderStatus,
+            paymentMethod: paymentMethod,
+            image: fileName // Lưu dữ liệu hình ảnh vào đối tượng order
         };
-
-        reader.readAsDataURL(image);
+    
+        orders.push(order);
+        outputMessage(`The order [${order.orderID}, ${orderDate}, ${orderStatus}] has been added`, 'red');
+        document.getElementById('orderID').value = currentOrderId;
     }
+
 
     function submitOrders() {
         fetch('/createManyOrders', {
@@ -202,6 +256,12 @@
         var messageElement = document.getElementById('message');
         messageElement.textContent = message;
         messageElement.style.color = color;
+    }
+
+    function scrollToCreateSection() {
+        const createSection = document.getElementById('sec-2');
+        createSection.style.display = ''; // Hiển thị phần tử
+        createSection.scrollIntoView({ behavior: 'smooth' });
     }
 
 </script>

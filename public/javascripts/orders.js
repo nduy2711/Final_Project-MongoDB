@@ -82,7 +82,7 @@ function output(orders) {
     `;
 
     orders.forEach(order => {
-        let imageSrc = order.image.startsWith('data:image') ? order.image : `public/images/${order.image}`;
+        let imageSrc = order.image ? `public/images/${order.image}` : 'default/path/to/image';
         tableHtml += `
             <tr>
                 <td>${order.orderID}</td>

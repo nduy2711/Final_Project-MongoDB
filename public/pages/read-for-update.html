@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../stylesheets/anopage.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <title>Read-for-update</title>
     <style>
         .home {
@@ -31,20 +29,10 @@
             font-weight: bold;
         }
 
-        input[type="text"],
-        input[type="date"],
-        input[type="number"] {
-            width: calc(100% - 12px);
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-
-        button[type="submit"],
+        button[type="button"],
         button[type="reset"] {
             padding: 10px 20px;
-            background-color: #333;
+            background-color: #ff7f00; /* Màu cam */
             color: #fff;
             border: none;
             border-radius: 3px;
@@ -52,27 +40,26 @@
             transition: background-color 0.3s ease;
         }
 
-        button[type="submit"]:hover,
+        button[type="button"]:hover,
         button[type="reset"]:hover {
-            background-color: #555;
+            background-color: #e66900; /* Màu cam đậm khi hover */
         }
 
-        button[type="submit"]:focus,
+        button[type="button"]:focus,
         button[type="reset"]:focus {
             outline: none;
         }
 
-        button[type="submit"]:active,
+        button[type="button"]:active,
         button[type="reset"]:active {
             transform: translateY(1px);
         }
-
+        
         table {
             width: 100%;
         }
     </style>
 </head>
-
 <body>
     <header>
         <a href="#" class="logo"><img src="../images/VanLang-logo.png" alt=""></a>
@@ -84,7 +71,7 @@
             <li><a href="./read-for-update.html">Update</a></li>
             <li><a href="./search.html">Find</a></li>
         </ul>
-        <a href="" class="manager-icon"><i class="fa-solid fa-user-tie"></i></a>
+        <a href="" class="manager-icon" ><i class="fa-solid fa-user-tie"></i></a>
     </header>
 
     <section class="home">
@@ -94,37 +81,41 @@
 
             <label for="orderStatus">Order Status:</label>
             <input type="text" id="orderStatus" name="orderStatus"><br><br>
+
+            <!-- <label for="image">Image:</label>
+            <input type="file" id="image" name="image"><br><br> -->
+
             <button type="button" onclick="searchOrder()">Search</button>
             <button type="reset">Reset</button>
         </form>
     </section>
 
     <table id="searchResults" class="search-results">
-
+        
     </table>
 
     <section class="update-form" style="display: none;">
         <form id="updateForm" action="/update" method="PUT">
             <label for="updateOrderID">Order ID:</label>
             <input type="text" id="updateOrderID" name="updateOrderID" readonly><br><br>
-
+            
             <label for="updateOrderDate">Order Date:</label>
             <input type="date" id="updateOrderDate" name="updateOrderDate"><br><br>
-
+            
             <label for="updateTotalAmount">Total Amount:</label>
             <input type="number" id="updateTotalAmount" name="updateTotalAmount"><br><br>
-
+            
             <label for="updateOrderStatus">Order Status:</label>
             <input type="text" id="updateOrderStatus" name="updateOrderStatus"><br><br>
-
+            
             <label for="updatePaymentMethod">Payment Method:</label>
             <input type="text" id="updatePaymentMethod" name="updatePaymentMethod"><br><br>
-
+            
             <label for="updateImage">Image:</label>
             <input type="file" id="updateImage" name="updateImage"><br><br>
-
+            
             <img id="displayImage" src="" alt="Order Image" style="max-width: 200px;"><br><br>
-
+            
             <button type="button" onclick="updateOrder()">Update</button>
         </form>
     </section>
@@ -157,7 +148,7 @@
             <div class="social">
                 <a href=""><i class="fa-brands fa-instagram"></i></a>
                 <a href=""><i class="fa-brands fa-github"></i></a>
-                <a href=""><i class="fa-brands fa-facebook"></i></a>
+                <a href=""><i class="fa-brands fa-facebook"></i></a>    
             </div>
 
         </div>
@@ -169,18 +160,18 @@
 <script>
     const header = document.querySelector("header");
 
-    window.addEventListener("scroll", function () {
+    window.addEventListener("scroll", function(){
         header.classList.toggle("sticky", window.scrollY > 60)
     })
 
-    const sr = ScrollReveal({
-        distance: '45px',
-        duration: 2700,
-        reset: true
+    const sr = ScrollReveal ({
+	distance: '45px',
+	duration: 2700,
+	reset: true
     })
 
-    sr.reveal('.update', { delay: 350, origin: 'bottom' })
-    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact', { delay: 200, origin: 'bottom' })
+    sr.reveal('.update',{delay:350, origin:'bottom'})
+    sr.reveal('.sub-service,.about,.portfolio,.service,.cta,.contact',{delay:200, origin:'bottom'})
 
     async function searchOrder() {
         const orderID = document.getElementById('orderID').value;
@@ -196,7 +187,11 @@
             if (Array.isArray(data)) {
                 if (data.length === 0) {
                     // Hiển thị thông báo nếu không có đơn hàng nào được tìm thấy
-                    document.getElementById('searchResults').innerHTML = "<p>No orders found.</p>";
+                    const searchResultsDiv = document.getElementById('searchResults');
+                    searchResultsDiv.innerHTML = "<p>No orders found.</p>";
+
+                    // Cuộn xuống phần tử 'searchResults'
+                    searchResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
                 } else if (data.length === 1) {
                     // Chuyển hướng đến trang cập nhật với thông tin của đơn hàng đầu tiên trong mảng
                     window.location.href = `/update.html?orderID=${data[0].orderID}`;
@@ -218,6 +213,7 @@
         tableContainer.appendChild(createTable(results)); // Thêm bảng vào container
         searchResultsDiv.innerHTML = ''; // Xóa nội dung cũ trước khi thêm bảng mới
         searchResultsDiv.appendChild(tableContainer); // Thêm container chứa bảng vào div kết quả tìm kiếm
+        searchResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
     }
 
     function createTable(results) {
@@ -265,7 +261,7 @@
     function editOrder(orderID, orderDate, totalAmount, orderStatus, paymentMethod, image) {
         // Lấy ra phần tử section chứa bảng cập nhật
         const updateFormSection = document.querySelector('.update-form');
-
+        
         console.log(image);
         const orderIdInput = document.getElementById('updateOrderID');
         const orderDateInput = document.getElementById('updateOrderDate');
@@ -273,6 +269,7 @@
         const orderStatusInput = document.getElementById('updateOrderStatus');
         const paymentMethodInput = document.getElementById('updatePaymentMethod');
         const imageDisplay = document.getElementById('displayImage');
+        const updateImage = document.getElementById('updateImage')
 
         // Điền thông tin của đơn hàng vào các ô input
         orderIdInput.value = orderID;
@@ -286,46 +283,79 @@
 
         updateFormSection.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
     }
-
+    
+    function containsNumber(input) {
+        return /\d/.test(input);
+    }
 
     async function updateOrder() {
-        // Lấy dữ liệu từ các trường input trong form
         const orderID = document.getElementById('updateOrderID').value;
         const orderDate = document.getElementById('updateOrderDate').value;
         const totalAmount = document.getElementById('updateTotalAmount').value;
         const paymentMethod = document.getElementById('updatePaymentMethod').value;
         const orderStatus = document.getElementById('updateOrderStatus').value;
         const imageInput = document.getElementById('updateImage').value;
-        var fileName = imageInput.split('\\').pop();   // Chuyển đổi hình ảnh thành base64 nếu có
+        const fileName = imageInput.split('\\').pop();
+        console.log(fileName); 
 
-        const updatedOrder = {
-            orderID: orderID,
-            orderDate: orderDate,
-            totalAmount: totalAmount,
-            paymentMethod: paymentMethod,
-            orderStatus: orderStatus,
-            image: fileName  // Chú ý: Bạn cần xử lý việc tải ảnh lên server phía backend
-        };
+        // Kiểm tra xem các trường nhập liệu đã được điền đầy đủ chưa
+        if (!orderID || !orderDate || !totalAmount || !paymentMethod || !orderStatus || !fileName) {
+            alert("Please fill in all required fields");
+            return; // Dừng thực hiện nếu bất kỳ trường nào còn thiếu
+        }
+    
+        // Kiểm tra xem orderStatus và paymentMethod có chứa số không
+        if (containsNumber(orderStatus) || containsNumber(paymentMethod)) {
+            alert("Please enter text only for Order Status and Payment Method");
+            return; // Dừng thực hiện nếu có số trong Order Status hoặc Payment Method
+        }
 
         try {
-            const response = await fetch('/update', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedOrder)
-            });
+            const response = await fetch(`/getOrderDetails?orderID=${orderID}`);
+            const existingOrder = await response.json();
+            console.log(existingOrder.totalAmount);
+            console.log(existingOrder.image);
 
-            const data = await response.json();
-            console.log('Response from server:', data);
-            alert(data.message);
+            if (response.ok) {
+                // So sánh thông tin cũ và mới
+                const isDataChanged = orderDate !== existingOrder.orderDate ||
+                            totalAmount !== existingOrder.totalAmount ||
+                            paymentMethod !== existingOrder.paymentMethod ||
+                            orderStatus !== existingOrder.orderStatus ||
+                            fileName !== existingOrder.image;
+
+                // Kiểm tra xem thông tin có được thay đổi không
+                if (!isDataChanged) {
+                    alert(`orderID: ${orderID} không có thông tin nào được cập nhật!!!`);
+                    return; // Dừng thực hiện nếu không có gì thay đổi
+                }
+
+                // Gửi yêu cầu cập nhật
+                const updateResponse = await fetch('/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        orderID: orderID,
+                        orderDate: orderDate,
+                        totalAmount: totalAmount,
+                        paymentMethod: paymentMethod,
+                        orderStatus: orderStatus,
+                        image: fileName
+                    })
+                });
+
+                const updateData = await updateResponse.json();
+                alert(updateData.message);
+            } else {
+                throw new Error('Không thể lấy thông tin đơn hàng hiện tại');
+            }
         } catch (err) {
-            console.error('Cannot update: ', err);
-            alert('Cannot update: ' + err);
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
         }
     }
 
-
 </script>
-
 </html>

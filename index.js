@@ -2,14 +2,20 @@ const express = require('express')
 const app = express()
 const port = 3000
 const path = require('path')
-
+const { MongoClient } = require("mongodb");
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const orderModule = require('./public/javascripts/orders')
-const mongodbModule = require("./public/javascripts/mongodb");
+const mongodbModule = require("./public/javascripts/mongodb")
+
+const mongodbUrl = "mongodb://localhost:27017";
+let client = new MongoClient(mongodbUrl);
+const dbName = 'orders';
+const collectionName = 'order';
 
 // Kết nối đến cơ sở dữ liệu MongoDB
 mongodbModule.connectToMongoDB()
@@ -58,47 +64,46 @@ app.get('/order', async (req, res) => {
     }
 })
 
-app.post('/createManyOrders', async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
+app.get('/getOrderId', async (req, res) => {
+    const client = new MongoClient(mongodbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
+    await client.connect();
 
-        const db = client.db('orders');
-        const collection = db.collection('order');
+    const lastOrderID = await mongodbModule.getnextIDNumber(client, dbName, collectionName);
 
-        const orderDate = req.body.orderDate;
-        const totalAmount = req.body.totalAmount;
-        const orderStatus = req.body.orderStatus;
-        const paymentMethod = req.body.paymentMethod;
-        const image = req.file.filename;
-
-        const newId = 'OD202400' + (await collection.countDocuments({}) + 1).toString().padStart(4, '0');
-
-        const order = {
-            orderID: newId,
-            orderDate: orderDate,
-            totalAmount: totalAmount,
-            orderStatus: orderStatus,
-            paymentMethod: paymentMethod,
-            image: image
-        };
-
-        const insertedDocument = await collection.insertOne(order);
-
-        const message = `${insertedDocument.insertedCount} product created successfully!`;
-        res.json({ message: message });
-    } catch (err) {
-        console.error('Error creating product:', err);
-        res.status(500).send('Internal Server Error');
-    }
+    res.json({ lastOrderID });
 });
 
+
+app.post('/createManyOrders', async (req, res, next) => {
+    const order = req.body;
+    mongodbModule.addManyOrders(order);
+    const message = `${order.length} orders created successfully!`
+    res.json({ message: message })
+});
+
+app.get('/addOrderJSON', (req, res) => {
+    const filePath = path.join(__dirname, 'JSON', 'order.json');
+
+    fs.readFile(filePath, 'utf8', async (err, data) => {
+        if (err) {
+            console.error('Error reading the file:', err);
+            return res.status(500).send('Unable to read file');
+        }
+
+        try {
+            const orders = JSON.parse(data); 
+            await mongodbModule.addManyOrders(orders);
+            res.status(200).send('Orders added successfully');
+        } catch (parseError) {
+            console.error('Error parsing JSON:', parseError);
+            res.status(500).send('Error parsing JSON');
+        }
+    });
+});
 app.get('/api/search', async (req, res) => {
     const { orderID } = req.query.orderID;
     const { orderStatus } = req.query.orderStatus;
     const query = {};
-
     if (orderID) {
         query.orderID = id;
     }
@@ -257,6 +262,27 @@ app.get('/read', async (req, res) => {
     }
 })
 
+app.get('/getOrderDetails', async (req, res) => {
+    const orderID = req.query.orderID; // Lấy orderID từ query parameter
+
+    try {
+        // Gọi hàm để lấy chi tiết đơn hàng dựa trên orderID
+        const orderDetails = await mongodbModule.getOrderDetailsByID(orderID);
+
+        if (orderDetails) {
+            // Nếu tìm thấy chi tiết đơn hàng, gửi về dữ liệu dưới dạng JSON
+            res.json(orderDetails);
+        } else {
+            // Nếu không tìm thấy, trả về mã lỗi 404 - Not Found
+            res.status(404).json({ error: 'Order not found' });
+        }
+    } catch (error) {
+        // Xử lý lỗi nếu có
+        console.error('Error fetching order details:', error);
+        res.status(500).json({ error: 'Internal server error' }); // Trả về mã lỗi 500 - Internal Server Error
+    }
+});
+
 app.get('/read/for/update', async (req, res) => {
     const orderID = req.query.orderID;
     const orderStatus = req.query.orderStatus;
@@ -286,10 +312,32 @@ app.put('/update', async (req, res) => {
         const orderID = newOrder.orderID;
 
         const ordersCollection = mongodbModule.dbCollection;
+
+        // Lấy thông tin đơn hàng hiện có từ cơ sở dữ liệu
+        const existingOrder = await ordersCollection.findOne({ orderID: orderID });
+
+        // So sánh thông tin mới với thông tin hiện có
+        const isDataChanged =
+            newOrder.orderDate !== existingOrder.orderDate ||
+            newOrder.totalAmount !== existingOrder.totalAmount ||
+            newOrder.orderStatus !== existingOrder.orderStatus ||
+            newOrder.paymentMethod !== existingOrder.paymentMethod ||
+            newOrder.image !== existingOrder.image;
+
+        // Kiểm tra xem thông tin có được thay đổi không
+        if (!isDataChanged) {
+            res.json({ message: "Không có thông tin nào được cập nhật" });
+            return;
+        }
+
+        // Thực hiện cập nhật chỉ khi có thông tin được thay đổi
         await ordersCollection.updateOne({ orderID: orderID }, {
             $set: {
+                orderDate: newOrder.orderDate,
                 totalAmount: newOrder.totalAmount,
-                paymentMethod: newOrder.paymentMethod
+                orderStatus: newOrder.orderStatus,
+                paymentMethod: newOrder.paymentMethod,
+                image: newOrder.image
             }
         });
 
@@ -300,3 +348,5 @@ app.put('/update', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
+
+
