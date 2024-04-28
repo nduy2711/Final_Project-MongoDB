@@ -11,6 +11,81 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
         rel="stylesheet">
     <title>Delete Order</title>
+
+    <style>
+        .content {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+           
+        /* Base button styles */
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none; /* Removes the outline when the button is clicked */
+        }
+
+        /* Specific styles for orange buttons */
+        button[type="button"], button[type="reset"], .btn, .content button {
+            background-color: #ff7f00; /* Orange color */
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Button hover effect */
+        button:hover {
+            background-color: #e66900; /* Slightly darker orange on hover */
+        }
+
+        /* Style for the search and reset buttons in the form */
+        .update button {
+            margin: 5px 0;
+        }
+
+        /* Style adjustments for accessibility */
+        button:focus {
+            background-color: #e66900; /* Darker orange when focused for better visibility */
+        }
+
+        /* Resets and table styles for consistency */
+        input[type="text"], input[type="checkbox"], table {
+            width: 100%;
+        }
+
+        table {
+            border-spacing: 0;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd; /* Adds a light line between rows */
+        }
+
+        th {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Responsive table container */
+        .search-results div {
+            overflow-x: auto;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -31,15 +106,16 @@
         <div class="home-text">
             <h3>Delete</h3>
             <h1>Order</h1>
-            <h5>This is homepage management by <span>Le Nhat Duy</span></h5>
+            <h5>This is homepage management by <span>VangLang University</span></h5>
             <p>Efficiently remove orders to maintain a streamlined workflow.</p>
+            <button class="btn" onclick="scrollToDeleteSection()">Delete</button>
         </div>
         <div class="home-img">
             <img src="../images/box.png" alt="">
         </div>
     </section>
 
-    <section class="content">
+    <section class="content" style="display: none;">
         <form action="/read/for/update" method="GET" class="update">
             <label for="orderID">Order ID:</label>
             <input type="text" id="orderID" name="orderID"><br><br>
@@ -103,6 +179,13 @@
             duration: 2700,
             reset: true
         })
+
+        function scrollToDeleteSection() {
+            const contentSection = document.querySelector('.content');
+            contentSection.style.display = 'block'; // Show the content section if it was hidden
+            contentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
 
         sr.reveal('.home-text', { delay: 350, origin: 'left' })
         sr.reveal('.home-img', { delay: 350, origin: 'right' })
