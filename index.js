@@ -148,6 +148,16 @@ app.post('/deleteMultipleOrders', async (req, res) => {
     }
 });
 
+app.delete('/deleteAll', async (req, res) => {
+    try {
+        const deletedCount = await mongodbModule.deleteAllOrders();
+        res.send(`${deletedCount} orders have been successfully deleted.`);
+    } catch (error) {
+        console.error('Error deleting all orders:', error);
+        res.status(500).send('Failed to delete all orders.');
+    }
+});
+
 app.get('/api/orderIDs', async (req, res) => {
     try {
         const orderIDs = await mongodbModule.getOrderIDs();
@@ -160,21 +170,20 @@ app.get('/api/orderIDs', async (req, res) => {
 
 app.get('/read', async (req, res) => {
     const priceRange = req.query.priceRange;
-
-    // Khởi tạo một biến để lưu trữ điều kiện tìm kiếm
+    const paymentMethod = req.query.paymentMethod;
     let searchCondition = {};
 
-    // Xác định điều kiện tìm kiếm dựa trên mức giá được chọn
-    const paymentMethod = req.query.paymentMethod;
-    if (paymentMethod) {
-        searchCondition.paymentMethod = { $regex: paymentMethod, $options: 'i' }
+    if (priceRange) {
+        if (priceRange === 'below100') {
+            searchCondition.totalAmount = { $lt: 100 };
+        } else if (priceRange === '100to200') {
+            searchCondition.totalAmount = { $gte: 100, $lte: 200 };
+        } else if (priceRange === 'above200') {
+            searchCondition.totalAmount = { $gt: 200 };
+        }
     }
-    if (priceRange === 'below100') {
-        searchCondition = { totalAmount: { $lt: 100 } };
-    } else if (priceRange === '100to200') {
-        searchCondition = { totalAmount: { $gte: 100, $lte: 200 } };
-    } else if (priceRange === 'above200') {
-        searchCondition = { totalAmount: { $gt: 200 } };
+    if (paymentMethod) {
+        searchCondition.paymentMethod = { $regex: paymentMethod, $options: 'i' };
     }
 
     try {

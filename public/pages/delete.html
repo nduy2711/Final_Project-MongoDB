@@ -21,7 +21,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-           
+
         /* Base button styles */
         button {
             padding: 10px 20px;
@@ -29,12 +29,17 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            outline: none; /* Removes the outline when the button is clicked */
+            outline: none;
+            /* Removes the outline when the button is clicked */
         }
 
         /* Specific styles for orange buttons */
-        button[type="button"], button[type="reset"], .btn, .content button {
-            background-color: #ff7f00; /* Orange color */
+        button[type="button"],
+        button[type="reset"],
+        .btn,
+        .content button {
+            background-color: #ff7f00;
+            /* Orange color */
             color: white;
             font-size: 16px;
             font-weight: bold;
@@ -42,7 +47,8 @@
 
         /* Button hover effect */
         button:hover {
-            background-color: #e66900; /* Slightly darker orange on hover */
+            background-color: #e66900;
+            /* Slightly darker orange on hover */
         }
 
         /* Style for the search and reset buttons in the form */
@@ -52,11 +58,14 @@
 
         /* Style adjustments for accessibility */
         button:focus {
-            background-color: #e66900; /* Darker orange when focused for better visibility */
+            background-color: #e66900;
+            /* Darker orange when focused for better visibility */
         }
 
         /* Resets and table styles for consistency */
-        input[type="text"], input[type="checkbox"], table {
+        input[type="text"],
+        input[type="checkbox"],
+        table {
             width: 100%;
         }
 
@@ -65,10 +74,12 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             text-align: left;
             padding: 12px;
-            border-bottom: 1px solid #ddd; /* Adds a light line between rows */
+            border-bottom: 1px solid #ddd;
+            /* Adds a light line between rows */
         }
 
         th {
@@ -129,7 +140,7 @@
 
         <div class="search-results" id="searchResults"></div>
 
-        <button onclick="deleteSelectedOrders()">Delete Selected Orders</button>
+        <button onclick="confirmDeleteAll()">Delete All Orders</button>
     </section>
 
     <section class="footer">
@@ -231,6 +242,20 @@
 
         function displaySearchResults(results) {
             const searchResultsDiv = document.getElementById('searchResults');
+
+            // Nếu chỉ có một kết quả duy nhất
+            if (results.length === 1) {
+                // Hiển thị thông báo xóa
+                const deleteMessage = document.createElement('p');
+                deleteMessage.textContent = "This order will be deleted automatically.";
+                searchResultsDiv.appendChild(deleteMessage);
+
+                // Xóa đơn hàng tự động
+                const orderID = results[0].orderID;
+                confirmDelete(orderID);
+                return; // Ngăn không hiển thị bảng kết quả tìm kiếm
+            }
+
             const tableContainer = document.createElement('div'); // Tạo một div làm container cho bảng
             tableContainer.style.overflowX = 'auto'; // Cho phép cuộn ngang khi bảng quá rộng
             tableContainer.style.width = '100%'; // Đảm bảo rằng container của bảng tràn màn hình
@@ -277,7 +302,7 @@
                 <td style="padding: 12px 15px;">${order.paymentMethod}</td>
                 <td style="padding: 12px 15px;"><img src="/public/images/${order.image}" alt="Order Image" style="max-width: 100px;"></td>
                 <td style="padding: 12px 15px;">
-                    <a onclick="deleteOrder('${order.orderID}')" class="edit-link" style="display: inline-block; padding: 10px 20px; background-color: #333; color: #fff; text-decoration: none; border-radius: 3px; cursor: pointer; transition: background-color 0.3s ease;">Delete</a>
+                    <a onclick="confirmDelete('${order.orderID}')" class="edit-link" style="display: inline-block; padding: 10px 20px; background-color: #333; color: #fff; text-decoration: none; border-radius: 3px; cursor: pointer; transition: background-color 0.3s ease;">Delete</a>
                 </td>
             `;
 
@@ -286,13 +311,7 @@
             return table;
         }
 
-        function confirmDelete() {
-            const orderID = document.getElementById('orderID').value;
-            if (!orderID) {
-                alert('Vui lòng chọn Order ID để xóa.');
-                return;
-            }
-
+        function confirmDelete(orderID) {
             if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này không?')) {
                 deleteOrder(orderID);
             }
@@ -353,6 +372,27 @@
             if (confirm(`Are you sure you want to delete ${orderIDsToDelete.length} orders?`)) {
                 deleteOrders(orderIDsToDelete);
             }
+        }
+
+        function confirmDeleteAll() {
+            if (confirm('Bạn có chắc chắn muốn xóa tất cả đơn hàng không?')) {
+                deleteAllOrders();
+            }
+        }
+
+        function deleteAllOrders() {
+            fetch(`/deleteAll`, {
+                method: "DELETE"
+            })
+                .then(response => response.text())
+                .then(message => {
+                    alert(message);
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert('Đã xảy ra lỗi khi xóa tất cả đơn hàng.');
+                });
         }
 
     </script>

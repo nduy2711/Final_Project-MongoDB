@@ -139,6 +139,15 @@ async function deleteOrder(orderID) {
     }
 }
 
+async function deleteAllOrders() {
+    try {
+        const result = await dbCollection.deleteMany({});
+        return result.deletedCount;
+    } catch (error) {
+        throw error;
+    }
+}
+
 async function getOrderIDs() {
     try {
         const orders = await dbCollection.find().toArray();
@@ -383,6 +392,7 @@ module.exports = {
     addManyOrders,
     deleteOrder,
     deleteOrders,
+    deleteAllOrders,
     getnextIDNumber,
     addOrder,
     getOrderById,
